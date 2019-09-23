@@ -11,5 +11,8 @@ before_install:
   - npm install -g jest 
   - npm install -g codecov
   
+install:
+  - cd packages/event-flux/ && npm install
+  
 script:
   - cd packages/event-flux/ && npm run test
