@@ -1,3 +1,8 @@
+
+[![Travis CI](https://travis-ci.org/event-flux/event-flux.svg?branch=master)](https://travis-ci.org/event-flux/event-flux)
+[![Codecov Coverage](https://img.shields.io/codecov/c/github/event-flux/event-flux/coverage.svg?style=flat-square)](https://codecov.io/gh/event-flux/event-flux/)
+
+
 # event-flux
 
 

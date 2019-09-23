@@ -13,6 +13,6 @@ before_install:
   
 install:
   - cd packages/event-flux/ && npm install
-  
+
 script:
-  - cd packages/event-flux/ && npm run test
+  - npm run test
