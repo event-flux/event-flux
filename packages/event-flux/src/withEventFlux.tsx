@@ -1,8 +1,7 @@
 import * as React from 'react';
 import Provider, { StoreContext } from './Provider';
-import AppStore from "./AppStore";
 import DispatchItem from './DispatchItem';
-const memoizeOne = require('memoize-one');
+import * as memoizeOne from 'memoize-one';
 
 const { useContext, useEffect, useMemo, useRef } = React;
 
@@ -80,7 +79,7 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[]) {
     let stateKey: string = storeDef[2]!;
     let curHandler = stateRefs.current[stateKey];
     if (!curHandler) {
-      curHandler = stateRefs.current[stateKey] = memoizeOne(
+      curHandler = stateRefs.current[stateKey] = (memoizeOne.default || memoizeOne)(
         (curState: any, stateFunc: string[] | StateFilter) => processState(curState, stateFunc),
       );
       // When we first create the store, we get the state from the appStore
