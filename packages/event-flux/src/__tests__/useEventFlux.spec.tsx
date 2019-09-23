@@ -3,7 +3,7 @@ import StoreBase from '../StoreBase';
 import { declareStore } from '../StoreDeclarer';
 import * as React from 'react';
 import { mount, shallow } from 'enzyme';
-import { Provider } from '..';
+import Provider from '../Provider';
 import useEventFlux from '../useEventFlux';
 import DispatchParent from '../DispatchParent';
 import RecycleStrategy from '../RecycleStrategy';

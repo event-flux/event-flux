@@ -12,7 +12,7 @@ gulp.task('clean', function () {
 
 var tsProject = ts.createProject("tsconfig.json");
 gulp.task('ts', function () {
-  var tsResult = gulp.src('src/**/*.ts')
+  var tsResult = gulp.src(['src/**/*.ts', 'src/**/*.tsx'])
     .pipe(tsProject());
 
   return merge([
