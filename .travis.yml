@@ -12,7 +12,7 @@ before_install:
   - npm install -g codecov
   
 install:
-  - cd packages/event-flux/ && npm install
+  - npm install
 
 script:
   - npm run test
