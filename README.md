@@ -1,5 +1,10 @@
 ## event-flux
 
+[![Travis CI](https://travis-ci.org/event-flux/event-flux.svg?branch=master)](https://travis-ci.org/event-flux/event-flux)
+[![codecov](https://codecov.io/gh/event-flux/event-flux/branch/master/graph/badge.svg)](https://codecov.io/gh/event-flux/event-flux)
+[![npm version](https://badge.fury.io/js/event-flux.svg)](https://www.npmjs.com/package/event-flux)
+[![Downloads](https://img.shields.io/npm/dm/event-flux.svg)](https://www.npmjs.com/package/event-flux)
+
 *event-flux* is the flux-like store management. It manage the complex links in those stores and make the view respond to the store change easy.
 
 ### How it run
