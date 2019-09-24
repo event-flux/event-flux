@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Provider, { StoreContext } from './Provider';
+import Provider, { EventFluxContext } from './Provider';
 import DispatchItem from './DispatchItem';
 import * as memoizeOne from 'memoize-one';
 
@@ -49,7 +49,7 @@ export function processState(state: any, handler: string[] | StateFilter) {
 }
  
 export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[]) {
-  let { _appStore, stores, state } = useContext(StoreContext);
+  let { _appStore, stores, state } = useContext(EventFluxContext);
 
   let defList: StoreDefItemWithKey[] = useMemo(() => transformDefArgs(args), []);
 

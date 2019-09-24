@@ -13,7 +13,7 @@
     "moduleResolution": "node",
     "lib": ["es2015", "dom"],
     "downlevelIteration": true,
-    "experimentalDecorators": true
-  },
-  "declaration": true 
+    "experimentalDecorators": true,
+    "declaration": true
+  }
 }

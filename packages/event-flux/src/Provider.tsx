@@ -13,8 +13,8 @@ interface ProviderProps {
   appStore: AppStore;
 }
 
-export const StoreContext = React.createContext<ContextValue>({ _appStore: undefined, stores: {}, state: {} });
-const ContextProvider = StoreContext.Provider;
+export const EventFluxContext = React.createContext<ContextValue>({ _appStore: undefined, stores: {}, state: {} });
+const ContextProvider = EventFluxContext.Provider;
 
 export default class Provider extends React.PureComponent<ProviderProps, ContextValue> {
   disposable: DisposableLike;

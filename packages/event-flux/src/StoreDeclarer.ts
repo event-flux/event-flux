@@ -54,7 +54,7 @@ export interface StoreDeclarerOptions {
 }
 
 const IS_STORE = '@@__STORE_ITEM__@@';
-class StoreDeclarer<T> {
+export class StoreDeclarer<T> {
   Store: StoreBaseConstructor<T>;
   depStoreNames: string[] | undefined;
   options: StoreDeclarerOptions | undefined;
@@ -77,7 +77,7 @@ class StoreDeclarer<T> {
   }
 }
 
-function declareStore<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreDeclarerOptions, options?: StoreDeclarerOptions) {
+export function declareStore<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreDeclarerOptions, options?: StoreDeclarerOptions) {
   return new StoreDeclarer(Store, depStoreNames, options);
 }
 
@@ -90,7 +90,7 @@ export interface StoreListDeclarerOptions {
 }
 const IS_STORE_LIST = '@@__STORE_LIST__@@';
 
-class StoreListDeclarer<T> {
+export class StoreListDeclarer<T> {
   Store: StoreBaseConstructor<T>;
   depStoreNames: string[] | undefined;
   options: StoreListDeclarerOptions | undefined;
@@ -114,7 +114,7 @@ class StoreListDeclarer<T> {
   }
 }
 
-function declareStoreList<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreListDeclarerOptions, options?: StoreListDeclarerOptions) {
+export function declareStoreList<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreListDeclarerOptions, options?: StoreListDeclarerOptions) {
   return new StoreListDeclarer(Store, depStoreNames, options);
 }
 
@@ -128,7 +128,7 @@ export interface StoreMapDeclarerOptions {
 }
 const IS_STORE_MAP = '@@__STORE_MAP__@@';
 
-class StoreMapDeclarer<T> {
+export class StoreMapDeclarer<T> {
   Store: StoreBaseConstructor<T>;
   depStoreNames: string[] | undefined;
   options: StoreMapDeclarerOptions | undefined;
@@ -152,13 +152,8 @@ class StoreMapDeclarer<T> {
   }
 }
 
-function declareStoreMap<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreMapDeclarerOptions, options?: StoreMapDeclarerOptions) {
+export function declareStoreMap<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreMapDeclarerOptions, options?: StoreMapDeclarerOptions) {
   return new StoreMapDeclarer(Store, depStoreNames, options);
 }
-
-export {
-  StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, 
-  declareStore, declareStoreList, declareStoreMap 
-};
 
 export type AnyStoreDeclarer = StoreDeclarer<any> | StoreListDeclarer<any> | StoreMapDeclarer<any>;
