@@ -283,7 +283,7 @@ export default class AppStore {
         if (depStore.getRefCount() === 0) {
           depStore.dispose();
           // delete this.stores[depName];
-          this._deleteStore(storeKey);
+          this._deleteStore(depName);
 
           if (depList.indexOf(name) === -1) {
             filterDepNames.push(depName);
