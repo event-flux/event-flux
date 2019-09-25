@@ -238,7 +238,8 @@ export default class AppStore {
       // let storeInfo = this._storeRegisterMap[storeKey];
       let curStore = this._storeRegisterMap[storeKey].create(this);
       curStore._addRef();
-      this.stores[storeKey] = curStore;
+      // this.stores[storeKey] = curStore;
+      this._createStore(storeKey, curStore);
     }
 
     // Inject all of the dependency stores for depList
@@ -260,7 +261,8 @@ export default class AppStore {
   _disposeStoreAndDeps(storeKey: string, store: DispatchItem) {
     if (store.getRefCount() > 0) return;
     store.dispose();
-    delete this.stores[storeKey];
+    // delete this.stores[storeKey];
+    this._deleteStore(storeKey);
 
     let depList = [storeKey];
     for (let i = 0; i < depList.length; i += 1) {
@@ -280,7 +282,8 @@ export default class AppStore {
 
         if (depStore.getRefCount() === 0) {
           depStore.dispose();
-          delete this.stores[depName];
+          // delete this.stores[depName];
+          this._deleteStore(storeKey);
 
           if (depList.indexOf(name) === -1) {
             filterDepNames.push(depName);
@@ -290,6 +293,14 @@ export default class AppStore {
   
       depList.splice(depList.length, 0, ...filterDepNames);
     }
+  }
+
+  _createStore(storeKey: string, store: DispatchItem) {
+    this.stores[storeKey] = store;
+  }
+
+  _deleteStore(storeKey: string) {
+    delete this.stores[storeKey];
   }
 }
 
