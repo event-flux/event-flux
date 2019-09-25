@@ -218,17 +218,19 @@ describe('AppStore', () => {
     expect(appStore.stores).toEqual({});
   });
 
-  test("should transfer storeOpts to _createStore and _deleteStore", () => {
-    let appStore = new AppStore([declareStore(StoreBase, [], { storeKey: "helloStore" })]);
+  test("should transfer storeOpts to _getStoreKey and _getStateKey", () => {
+    let appStore = new AppStore([declareStore(StoreBase, [], { storeKey: "helloStore", stateKey: "hello" })]);
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
     appStore.init();
 
-    appStore._createStore = jest.spyOn(appStore, "_createStore") as any;
-    appStore._deleteStore = jest.spyOn(appStore, "_deleteStore") as any;
+    appStore._getStoreKey = jest.spyOn(appStore, "_getStoreKey") as any;
+    appStore._getStateKey = jest.spyOn(appStore, "_getStateKey") as any;
     appStore.requestStore("helloStore", { client: "string" });
-    expect(appStore._createStore).toHaveBeenLastCalledWith("helloStore", appStore.stores["helloStore"], { client: "string" });
+    expect(appStore._getStoreKey).toHaveBeenLastCalledWith("helloStore", { client: "string" });
+    expect(appStore._getStateKey).toHaveBeenLastCalledWith("hello", { client: "string" });
 
+    (appStore._getStoreKey as any).mockReset();
     appStore.releaseStore("helloStore", { client: "string" });
-    expect(appStore._deleteStore).toHaveBeenLastCalledWith("helloStore", { client: "string" });
+    expect(appStore._getStoreKey).toHaveBeenLastCalledWith("helloStore", { client: "string" });
   });
 });

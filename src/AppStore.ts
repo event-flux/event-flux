@@ -76,19 +76,19 @@ export default class AppStore {
   preloadStores(stores: string[]) {
     let allDepList: string[] = [];
     for (let storeKey of stores) {
-      let store = this.stores[storeKey];
+      let store = this.stores[this._getStoreKey(storeKey)];
       if (!store) {
         let depList = this._createStoreAndInject(storeKey);
         allDepList = allDepList.concat(depList);
         // For preload stores, it need not add reference count.
-        this.stores[storeKey]._decreaseRef(); 
+        this.stores[this._getStoreKey(storeKey)]._decreaseRef(); 
       }
     }
     // Wait for all the stores and the dependencies init.
     let initPromises = [];
     for (let i = allDepList.length - 1; i >= 0; i -= 1) {
       let storeKey = allDepList[i];
-      initPromises.push(this.stores[storeKey]._init());
+      initPromises.push(this.stores[this._getStoreKey(storeKey)]._init());
     }
     return Promise.all(initPromises);
   }
@@ -113,10 +113,11 @@ export default class AppStore {
 
   setRecycleStrategy(recycleStrategy: RecycleStrategy) {
     if (this._recycleStrategy !== recycleStrategy && recycleStrategy === RecycleStrategy.Urgent) {
-      for (let storeKey in this.stores) {
-        let store = this.stores[storeKey];
+      for (let finalStoreKey in this.stores) {
+        let store = this.stores[finalStoreKey];
         if (store && store.getRefCount() === 0) {
-          this._disposeStoreAndDeps(storeKey, store);
+          let [storeKey, opts] = this._parseStoreKey(finalStoreKey);
+          this._disposeStoreAndDeps(storeKey, store, opts);
         }
       }
     }
@@ -130,6 +131,9 @@ export default class AppStore {
   registerStore(...storeDeclarers: AnyStoreDeclarer[]) {
     for (let storeDeclarer of storeDeclarers) {
       let storeKey = storeDeclarer.options!.storeKey!;
+      if (this._storeRegisterMap[storeKey]) {
+        console.error(`Many Stores named ${storeKey} will be registered, That is not allowed!`);
+      }
       this._storeRegisterMap[storeKey] = storeDeclarer;
     }
   }
@@ -140,7 +144,9 @@ export default class AppStore {
    * @param storeKey 
    */
   requestStore(storeKey: string, storeOpts?: any): DispatchItem {
-    let store = this.stores[storeKey];
+    let finalStoreKey = this._getStoreKey(storeKey, storeOpts);
+
+    let store = this.stores[finalStoreKey];
     if (!store) {
       
       let depList = this._createStoreAndInject(storeKey, storeOpts);
@@ -153,9 +159,9 @@ export default class AppStore {
       // Invoke the depList's init, the dependency store's init will be invoked first
       for (let i = depList.length - 1; i >= 0; i -= 1) {
         let storeKey = depList[i];
-        this.stores[storeKey]._init();
+        this.stores[this._getStoreKey(storeKey, storeOpts)]._init();
       }
-      store = this.stores[storeKey];
+      store = this.stores[finalStoreKey];
     } else {
       store._addRef();
     }
@@ -167,7 +173,9 @@ export default class AppStore {
    * @param storeKey 
    */
   releaseStore(storeKey: string, storeOpts?: any) {
-    let store = this.stores[storeKey];
+    let finalStoreKey = this._getStoreKey(storeKey, storeOpts);
+
+    let store = this.stores[finalStoreKey];
     if (!store) return;
     // store._decreaseRef();
     // If the store will be disposed, then we check if we can dispose or not
@@ -175,6 +183,7 @@ export default class AppStore {
       for (let cycleSet of this._cycleCollections!) {
         if (cycleSet.has(storeKey)) {
           for (let iKey of cycleSet) {
+            iKey = this._getStoreKey(iKey, storeOpts);
             if (this.stores[iKey].getRefCount() > 1) {
               this.stores[iKey]._decreaseRef();
               return;
@@ -217,7 +226,7 @@ export default class AppStore {
           console.error(`The dependency store ${depName} is not registered!`);
           continue;
         }
-        let depStore = this.stores[depName];
+        let depStore = this.stores[this._getStoreKey(depName, storeOpts)];
 
         // If the dependency store has exists, then this store don't need to appear in the depList
         // And if this dependency is the recursive dependency, then we need to remove it from the depList
@@ -238,8 +247,7 @@ export default class AppStore {
       // let storeInfo = this._storeRegisterMap[storeKey];
       let curStore = this._storeRegisterMap[storeKey].create(this);
       curStore._addRef();
-      // this.stores[storeKey] = curStore;
-      this._createStore(storeKey, curStore, storeOpts);
+      this.stores[this._getStoreKey(storeKey, storeOpts)] = curStore;
     }
 
     // Inject all of the dependency stores for depList
@@ -253,16 +261,15 @@ export default class AppStore {
       }
       let { stateKey } = storeInfo.options!;
       let initState = this.__initStates__ ? stateKey ? this.__initStates__[stateKey] : this.__initStates__ : undefined;
-      this.stores[storeKey]._inject(storeInfo.Store, stateKey, depStores, initState, storeInfo.options);
+      this.stores[this._getStoreKey(storeKey, storeOpts)]._inject(storeInfo.Store, this._getStateKey(stateKey!, storeOpts), depStores, initState, storeInfo.options);
     }
     return depList;
   }
-
+ 
   _disposeStoreAndDeps(storeKey: string, store: DispatchItem, storeOpts?: any) {
     if (store.getRefCount() > 0) return;
     store.dispose();
-    // delete this.stores[storeKey];
-    this._deleteStore(storeKey, storeOpts);
+    delete this.stores[this._getStoreKey(storeKey, storeOpts)];
 
     let depList = [storeKey];
     for (let i = 0; i < depList.length; i += 1) {
@@ -274,7 +281,7 @@ export default class AppStore {
 
       let filterDepNames = [];
       for (let depName of depNames) {
-        let depStore = this.stores[depName];
+        let depStore = this.stores[this._getStoreKey(depName, storeOpts)];
 
         if (!depStore) continue;
 
@@ -282,8 +289,7 @@ export default class AppStore {
 
         if (depStore.getRefCount() === 0) {
           depStore.dispose();
-          // delete this.stores[depName];
-          this._deleteStore(depName, storeOpts);
+          delete this.stores[this._getStoreKey(depName, storeOpts)];
 
           if (depList.indexOf(name) === -1) {
             filterDepNames.push(depName);
@@ -294,13 +300,17 @@ export default class AppStore {
       depList.splice(depList.length, 0, ...filterDepNames);
     }
   }
-
-  _createStore(storeKey: string, store: DispatchItem, storeOpts?: any) {
-    this.stores[storeKey] = store;
+ 
+  _getStoreKey(storeKey: string, storeOpts?: any) {
+    return storeKey;
   }
 
-  _deleteStore(storeKey: string, storeOpts?: any) {
-    delete this.stores[storeKey];
+  _parseStoreKey(finalStoreKey: string): [string, any] {
+    return [finalStoreKey, undefined];
+  }
+
+  _getStateKey(stateKey: string, storeOpts?: any) {
+    return stateKey;
   }
 }
 
