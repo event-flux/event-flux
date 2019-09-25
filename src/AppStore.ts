@@ -139,11 +139,11 @@ export default class AppStore {
    * Request the appStore to add reference count if this store has exists.
    * @param storeKey 
    */
-  requestStore(storeKey: string): DispatchItem {
+  requestStore(storeKey: string, storeOpts?: any): DispatchItem {
     let store = this.stores[storeKey];
     if (!store) {
       
-      let depList = this._createStoreAndInject(storeKey);
+      let depList = this._createStoreAndInject(storeKey, storeOpts);
       // Invoke the depList's willInit, the dependency store's willInit will be invoked first
       // for (let i = depList.length - 1; i >= 0; i -= 1) {
       //   let storeKey = depList[i];
@@ -166,7 +166,7 @@ export default class AppStore {
    * Release the store reference count with name of storeKey, if the reference count decrease to 0, then the store destroy.
    * @param storeKey 
    */
-  releaseStore(storeKey: string) {
+  releaseStore(storeKey: string, storeOpts?: any) {
     let store = this.stores[storeKey];
     if (!store) return;
     // store._decreaseRef();
@@ -189,14 +189,14 @@ export default class AppStore {
       // If all of the cycle collections cannot find the ref count > 1, then we can dispose all of the dependency stores
       // breadth-first search all the dependency store and derease the reference count, If this store's count decrease to 0, dispose it.
       if (this._recycleStrategy === RecycleStrategy.Urgent) {
-        this._disposeStoreAndDeps(storeKey, store);        
+        this._disposeStoreAndDeps(storeKey, store, storeOpts);        
       }
     } else {
       store._decreaseRef();
     }
   }
 
-  _createStoreAndInject(storeKey: string) {
+  _createStoreAndInject(storeKey: string, storeOpts?: any) {
     // Search all of the dependency stores for this `storeKey` with Breadth first search
     let depList = [storeKey];
     for (let i = 0; i < depList.length; i += 1) {
@@ -239,7 +239,7 @@ export default class AppStore {
       let curStore = this._storeRegisterMap[storeKey].create(this);
       curStore._addRef();
       // this.stores[storeKey] = curStore;
-      this._createStore(storeKey, curStore);
+      this._createStore(storeKey, curStore, storeOpts);
     }
 
     // Inject all of the dependency stores for depList
@@ -258,11 +258,11 @@ export default class AppStore {
     return depList;
   }
 
-  _disposeStoreAndDeps(storeKey: string, store: DispatchItem) {
+  _disposeStoreAndDeps(storeKey: string, store: DispatchItem, storeOpts?: any) {
     if (store.getRefCount() > 0) return;
     store.dispose();
     // delete this.stores[storeKey];
-    this._deleteStore(storeKey);
+    this._deleteStore(storeKey, storeOpts);
 
     let depList = [storeKey];
     for (let i = 0; i < depList.length; i += 1) {
@@ -283,7 +283,7 @@ export default class AppStore {
         if (depStore.getRefCount() === 0) {
           depStore.dispose();
           // delete this.stores[depName];
-          this._deleteStore(depName);
+          this._deleteStore(depName, storeOpts);
 
           if (depList.indexOf(name) === -1) {
             filterDepNames.push(depName);
@@ -295,11 +295,11 @@ export default class AppStore {
     }
   }
 
-  _createStore(storeKey: string, store: DispatchItem) {
+  _createStore(storeKey: string, store: DispatchItem, storeOpts?: any) {
     this.stores[storeKey] = store;
   }
 
-  _deleteStore(storeKey: string) {
+  _deleteStore(storeKey: string, storeOpts?: any) {
     delete this.stores[storeKey];
   }
 }

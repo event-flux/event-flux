@@ -217,4 +217,18 @@ describe('AppStore', () => {
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
     expect(appStore.stores).toEqual({});
   });
+
+  test("should transfer storeOpts to _createStore and _deleteStore", () => {
+    let appStore = new AppStore([declareStore(StoreBase, [], { storeKey: "helloStore" })]);
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+    appStore.init();
+
+    appStore._createStore = jest.spyOn(appStore, "_createStore") as any;
+    appStore._deleteStore = jest.spyOn(appStore, "_deleteStore") as any;
+    appStore.requestStore("helloStore", { client: "string" });
+    expect(appStore._createStore).toHaveBeenLastCalledWith("helloStore", appStore.stores["helloStore"], { client: "string" });
+
+    appStore.releaseStore("helloStore", { client: "string" });
+    expect(appStore._deleteStore).toHaveBeenLastCalledWith("helloStore", { client: "string" });
+  });
 });

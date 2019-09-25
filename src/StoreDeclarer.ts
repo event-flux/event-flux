@@ -51,6 +51,7 @@ export interface StoreDeclarerOptions {
   args?: any;
   storeKey?: string;
   stateKey?: string;
+  [key: string]: any;
 }
 
 const IS_STORE = '@@__STORE_ITEM__@@';
@@ -87,6 +88,7 @@ export interface StoreListDeclarerOptions {
   stateKey?: string;
   size?: number;
   StoreList?: StoreListConstructor<any>;
+  [key: string]: any;
 }
 const IS_STORE_LIST = '@@__STORE_LIST__@@';
 
@@ -124,7 +126,8 @@ export interface StoreMapDeclarerOptions {
   storeKey?: string;
   stateKey?: string;
   keys?: string[];
-  StoreMap?: StoreMapConstructor<any>
+  StoreMap?: StoreMapConstructor<any>;
+  [key: string]: any;
 }
 const IS_STORE_MAP = '@@__STORE_MAP__@@';
 
