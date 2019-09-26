@@ -257,7 +257,7 @@ export default class AppStore {
       let depNames = storeInfo.depStoreNames || [];
       let depStores: { [storeKey: string]: DispatchItem } = {};
       for (let depName of depNames) {
-        depStores[depName] = this.stores[name];
+        depStores[depName] = this.stores[this._getStoreKey(depName, storeOpts)];
       }
       let { stateKey } = storeInfo.options!;
       let initState = this.__initStates__ ? stateKey ? this.__initStates__[stateKey] : this.__initStates__ : undefined;
@@ -291,7 +291,7 @@ export default class AppStore {
           depStore.dispose();
           delete this.stores[this._getStoreKey(depName, storeOpts)];
 
-          if (depList.indexOf(name) === -1) {
+          if (depList.indexOf(depName) === -1) {
             filterDepNames.push(depName);
           }
         }
@@ -301,14 +301,17 @@ export default class AppStore {
     }
   }
  
+  // calculate the storeKey by the origin storeKey and storeOpts
   _getStoreKey(storeKey: string, storeOpts?: any) {
     return storeKey;
   }
 
+  // Extract the origin storeKey and storeOpts from the final store key.
   _parseStoreKey(finalStoreKey: string): [string, any] {
     return [finalStoreKey, undefined];
   }
 
+  // calculate the stateKey by the origin stateKey and storeOpts
   _getStateKey(stateKey: string, storeOpts?: any) {
     return stateKey;
   }

@@ -233,4 +233,45 @@ describe('AppStore', () => {
     appStore.releaseStore("helloStore", { client: "string" });
     expect(appStore._getStoreKey).toHaveBeenLastCalledWith("helloStore", { client: "string" });
   });
+
+  test("should can customize the store key and the state key", () => {
+    class MyAppStore extends AppStore {
+      _getStoreKey(storeKey: string, storeOpts?: any) {
+        return storeOpts ? storeKey + "@" + storeOpts : storeKey;
+      }
+
+      _parseStoreKey(finalStoreKey: string): [string, any] {
+        let [storeKey, opts] = finalStoreKey.split("@");
+        return [storeKey, opts];
+      }
+
+      _getStateKey(stateKey: string, storeOpts?: any) {
+        return storeOpts ? stateKey + "@" + storeOpts : stateKey;
+      }
+    }
+
+    let appStore = new MyAppStore([
+      declareStore(StoreBase, ["todo2Store"], { storeKey: "todo1Store", stateKey: "todo1" }),
+      declareStore(StoreBase, ["todo1Store"], { storeKey: "todo2Store", stateKey: "todo2" })
+    ]);
+    // appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+    appStore.init();
+
+    appStore.requestStore("todo1Store", "hello");
+    expect(Object.keys(appStore.stores).sort()).toEqual(["todo1Store@hello", "todo2Store@hello"]);
+    expect(Object.keys(appStore.state).sort()).toEqual(["todo1@hello", "todo2@hello"]);
+
+    expect(appStore.stores["todo1Store@hello"]._stateKey).toEqual("todo1@hello");
+    expect((appStore.stores["todo1Store@hello"] as StoreBase<any>)["todo2Store"]).toEqual(appStore.stores["todo2Store@hello"]);
+
+    expect(appStore.stores["todo2Store@hello"]._stateKey).toEqual("todo2@hello");
+    expect((appStore.stores["todo2Store@hello"] as StoreBase<any>)["todo1Store"]).toEqual(appStore.stores["todo1Store@hello"]);
+
+    appStore.releaseStore("todo1Store", "hello");
+    expect(appStore.stores["todo1Store@hello"].getRefCount()).toBe(0);
+    // expect(appStore.stores["todo2Store@hello"].getRefCount()).toBe(0);
+
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+    expect(Object.keys(appStore.stores)).toEqual([]);
+  });
 });
