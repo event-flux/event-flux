@@ -262,7 +262,9 @@ export default class AppStore {
       }
       let { stateKey } = storeInfo.options!;
       let initState = this.__initStates__ ? stateKey ? this.__initStates__[stateKey] : this.__initStates__ : undefined;
-      this.stores[this._getStoreKey(storeKey, storeOpts)]._inject(storeInfo.Store, this._getStateKey(stateKey!, storeOpts), depStores, initState, storeInfo.options);
+      this.stores[this._getStoreKey(storeKey, storeOpts)]._inject(
+        storeInfo.Store, this._getStateKey(storeKey, stateKey!, storeOpts), depStores, initState, storeInfo.options
+      );
     }
     return depList;
   }
@@ -315,7 +317,7 @@ export default class AppStore {
   }
 
   // calculate the stateKey by the origin stateKey and storeOpts
-  _getStateKey(stateKey: string, storeOpts?: any) {
+  _getStateKey(storeKey: string, stateKey: string, storeOpts?: any) {
     return stateKey;
   }
 

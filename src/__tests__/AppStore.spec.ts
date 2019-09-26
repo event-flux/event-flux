@@ -231,7 +231,7 @@ describe('AppStore', () => {
     appStore.releaseStore("helloStore", { client: "string" });
     expect(appStore._deleteStore).toHaveBeenLastCalledWith("helloStore", { client: "string" });
   });
-  
+
   test("should transfer storeOpts to _getStoreKey and _getStateKey", () => {
     let appStore = new AppStore([declareStore(StoreBase, [], { storeKey: "helloStore", stateKey: "hello" })]);
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
@@ -241,7 +241,7 @@ describe('AppStore', () => {
     appStore._getStateKey = jest.spyOn(appStore, "_getStateKey") as any;
     appStore.requestStore("helloStore", { client: "string" });
     expect(appStore._getStoreKey).toHaveBeenLastCalledWith("helloStore", { client: "string" });
-    expect(appStore._getStateKey).toHaveBeenLastCalledWith("hello", { client: "string" });
+    expect(appStore._getStateKey).toHaveBeenLastCalledWith("helloStore", "hello", { client: "string" });
 
     (appStore._getStoreKey as any).mockReset();
     appStore.releaseStore("helloStore", { client: "string" });
@@ -259,7 +259,7 @@ describe('AppStore', () => {
         return [storeKey, opts];
       }
 
-      _getStateKey(stateKey: string, storeOpts?: any) {
+      _getStateKey(storeKey: string, stateKey: string, storeOpts?: any) {
         return storeOpts ? stateKey + "@" + storeOpts : stateKey;
       }
     }
