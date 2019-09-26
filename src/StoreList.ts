@@ -49,6 +49,10 @@ export default class StoreList<T> {
     }
   }
 
+  setInitStates(initStates: any) {
+    this.__initStates__ = initStates;
+  }
+
   setSize(count: number): Promise<void[]> | undefined {
     if (this.length === count) return;
     if (this.length < count) {

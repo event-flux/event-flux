@@ -66,4 +66,25 @@ describe('StoreMap', () => {
     expect(storeList.storeMap.size).toEqual(0);
     expect(dispatchParent.setState).toHaveBeenLastCalledWith({ "hello": undefined });
   });
+
+  test("request store keys", async () => {
+    let dispatchParent = { setState: jest.fn() };
+    let storeMap = new StoreMap(dispatchParent);
+    storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
+
+    let disposable1 = storeMap.request(["key1", "key2"]);
+    expect(storeMap._keyRefs["key1"]).toBe(1);
+    expect(storeMap._keyRefs["key2"]).toBe(1);
+    expect(storeMap.get("key1")).toBeTruthy();
+
+    let disposable2 = storeMap.request("key1");
+    expect(storeMap._keyRefs["key1"]).toBe(2);
+
+    disposable1.dispose();
+    disposable2.dispose();
+    expect(storeMap._keyRefs["key1"]).toEqual(0);
+    expect(storeMap._keyRefs["key2"]).toEqual(0);
+    expect(storeMap.has("key1")).toBeFalsy();
+    expect(storeMap.has("key2")).toBeFalsy();
+  });
 });

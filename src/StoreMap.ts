@@ -1,6 +1,7 @@
 import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from './StoreDeclarer';
 import DispatchItem from './DispatchItem';
 import DispatchParent from './DispatchParent';
+import { DisposableLike, CompositeDisposable } from 'event-kit';
 
 export default class StoreMap<T> {
   storeMap: Map<string, any> = new Map();
@@ -15,6 +16,9 @@ export default class StoreMap<T> {
 
   __initStates__: any;
   state: any = {};
+
+  _keyRefs: { [key: string]: number } = {};
+  _disposables = new CompositeDisposable();
 
   constructor(appStore: DispatchParent) {
     this._appStore = appStore;
@@ -46,6 +50,37 @@ export default class StoreMap<T> {
     }
   }
 
+  setInitStates(initStates: any) {
+    this.__initStates__ = initStates;
+  }
+
+  // Request the store that storeKey is `keys`, use the reference count
+  request(keys: string | string[]): DisposableLike {
+    if (!Array.isArray(keys)) {
+      keys = [keys];
+    }
+    for (let key of keys) {
+      if (this._keyRefs[key]) {
+        this._keyRefs[key] += 1;
+      } else {
+        this._keyRefs[key] = 1;
+        this.add(key);
+      }
+    }
+    let disposable = {
+      dispose: () => {
+        for (let key of keys) {
+          this._keyRefs[key] -= 1;
+          if (this._keyRefs[key] === 0) {
+            this.delete(key);
+          }
+        }
+      }
+    };
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
   add(key: string) {
     if (this.storeMap.has(key)) return;
     let newStore = new this._StoreBuilder!(this);
@@ -55,7 +90,7 @@ export default class StoreMap<T> {
     newStore._inject(this._StoreBuilder!, key, this._depStores, initState, {});
     this.storeMap.set(key, newStore);
     return newStore._init();
-   }
+  }
 
   delete(key: string) {
     let store = this.storeMap.get(key);
@@ -80,6 +115,7 @@ export default class StoreMap<T> {
 
   dispose() {
     this.clear();
+    this._disposables.dispose();
     this.state = {};
     if (this._stateKey) {
       this._appStore.setState({ [this._stateKey]: undefined });
