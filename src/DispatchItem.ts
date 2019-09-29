@@ -26,4 +26,6 @@ export default interface DispatchItem {
   getRefCount(): number;
 
   _stateKey: string | undefined;
+
+  [key: string]: any;
 }
