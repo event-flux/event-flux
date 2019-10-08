@@ -36,15 +36,15 @@ function parseOptions<OptionT extends IGenericOptions>(Store: any, depStoreNames
 }
 
 export interface StoreBaseConstructor<T> {
-  new (appStore: DispatchParent): StoreBase<T>;
+  new (appStore: DispatchParent | AppStore): StoreBase<T>;
 }
 
 export interface StoreListConstructor<T> {
-  new (appStore: DispatchParent): StoreList<T>;
+  new (appStore: DispatchParent | AppStore): StoreList<T>;
 }
 
 export interface StoreMapConstructor<T> {
-  new (appStore: DispatchParent): StoreMap<T>;
+  new (appStore: DispatchParent | AppStore): StoreMap<T>;
 }
 
 export interface StoreDeclarerOptions {

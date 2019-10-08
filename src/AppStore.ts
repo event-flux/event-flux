@@ -3,9 +3,10 @@ import { StoreBaseConstructor, AnyStoreDeclarer } from './StoreDeclarer';
 import RecycleStrategy from "./RecycleStrategy";
 import searchCycleCollection from "./searchCycleCollection";
 import DispatchItem from './DispatchItem';
+import DispatchParent from './DispatchParent';
 const IS_APP_STORE = '@@__APP_STORE__@@';
 
-export default class AppStore {
+export default class AppStore implements DispatchParent {
   _isInit = false;
   didChangeCallbacks: Function[] = [];
 
