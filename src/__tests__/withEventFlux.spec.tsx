@@ -24,16 +24,16 @@ describe('withEventFlux', () => {
       store2: ["state3", "state2"],
     };
     expect(transformDefArgs([storeDef])).toEqual([
-      ["store1", ["state1", "state2"], null],
-      ["store2", ["state3", "state2"], null]
+      { storeKey: "store1", stateFilter: ["state1", "state2"] },
+      { storeKey: "store2", stateFilter: ["state3", "state2"] }
     ]);
 
     expect(transformDefArgs([
       ["store1", ["state1", "state2"]],
       ["store2", ["state3", "state2"]],
     ])).toEqual([
-      ["store1", ["state1", "state2"], null],
-      ["store2", ["state3", "state2"], null]
+      { storeKey: "store1", stateFilter: ["state1", "state2"] },
+      { storeKey: "store2", stateFilter: ["state3", "state2"] },
     ]);
 
     const store1Gen = (state: any) => state;

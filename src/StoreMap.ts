@@ -54,6 +54,22 @@ export default class StoreMap<T> {
     this.__initStates__ = initStates;
   }
 
+  requestStore(storeKey: string) {
+    if (this._keyRefs[storeKey]) {
+      this._keyRefs[storeKey] += 1;
+    } else {
+      this._keyRefs[storeKey] = 1;
+      this.add(storeKey);
+    }
+  }
+
+  releaseStore(storeKey: string) {
+    this._keyRefs[storeKey] -= 1;
+    if (this._keyRefs[storeKey] === 0) {
+      this.delete(storeKey);
+    }
+  }
+
   // Request the store that storeKey is `keys`, use the reference count
   request(keys: string | string[]): DisposableLike {
     if (!Array.isArray(keys)) {

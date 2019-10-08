@@ -34,7 +34,7 @@ describe('withEventFlux', () => {
       let todo2Props = useEventFlux({ "todo2Store": ["state1", "state2"] });
       expect(Object.keys(todo2Props)).toEqual(["todo2Store", "state1", "state2"]);
 
-      let todo3Props = useEventFlux({ "todo2Store": ({ state1 }) => ({ state1 }) });
+      let todo3Props = useEventFlux(props, { "todo2Store": ({ state1 }) => ({ state1 }) });
       expect(Object.keys(todo3Props)).toEqual(["todo2Store", "state1"]);
 
       return <div />;
