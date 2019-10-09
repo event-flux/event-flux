@@ -40,7 +40,7 @@ describe('withEventFlux', () => {
     expect(transformDefArgs([
       ["store1", store1Gen],
     ])).toEqual([
-      ["store1", store1Gen, null],
+      { storeKey: "store1", stateFilter: store1Gen },
     ]);
   });
 

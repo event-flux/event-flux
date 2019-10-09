@@ -2,42 +2,57 @@ import * as React from 'react';
 import Provider, { EventFluxContext } from './Provider';
 import DispatchItem from './DispatchItem';
 import * as memoizeOne from 'memoize-one';
-import { StoreBase, StoreMap } from '.';
 import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from './StoreDeclarer';
 
 const { useContext, useEffect, useMemo, useRef } = React;
 
 export const FilterAll = (state: any) => state;
 
-type StateFilter = (state: any) => any;
+export type StateFilter = (state: any) => any;
+
+export interface StoreObjValDef {
+  filter: string[] | StateFilter,
+  storeFilter?: StoreMapKeyFilter;
+  as?: string;
+}
 
 export interface StoreDefineObj {
-  [storeKey: string]: string[] | StateFilter; 
+  [storeKey: string]: string[] | StateFilter | StoreObjValDef; 
 }
 
 export type StoreMapKeyFilter = (props: any) => string[];
 
-export type StoreDefineItem = string | [string] | [string, string[] | StateFilter] | [string, StoreMapKeyFilter, string[] | StateFilter];
+export type StoreDefineItem = string | [string] | [string, string[] | StateFilter | StoreObjValDef];
 
 type StoreType = "Item" | "List" | "Map";
 
 // type StoreDefItemWithKey = [StoreKeyItem, string[] | StateFilter, string | null];
-interface StoreDefItemWithKey {
+export interface StoreDefItemWithKey {
   storeKey: string;
   storeType?: StoreType;
   storeMapFilter?: StoreMapKeyFilter;
   stateFilter: string[] | StateFilter;
   stateKey?: string;
+  as?: string;
 }
 
+function parseStoreValDef(storeKey: string, storeVal: string[] | StateFilter | StoreObjValDef): StoreDefItemWithKey {
+  if (Array.isArray(storeVal) || typeof storeVal === "function") {
+    return { 
+      storeKey: storeKey, stateFilter: storeVal
+    };
+  } else {
+    return { 
+      storeKey: storeKey, stateFilter: storeVal.filter, storeMapFilter: storeVal.storeFilter, as: storeVal.as,
+    };
+  }
+}
 export function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): StoreDefItemWithKey[] {
   let defList: StoreDefItemWithKey[] = [];
   if (args.length >= 1 && typeof args[0] === "object" && !Array.isArray(args[0])) {
     let defObj = args[0] as StoreDefineObj;
     for (let storeKey in defObj) {
-      defList.push({ 
-        storeKey: storeKey, stateFilter: defObj[storeKey]
-      }); 
+      defList.push(parseStoreValDef(storeKey, defObj[storeKey])); 
     }
   } else {
     defList = (args as StoreDefineItem[]).map((defItem: StoreDefineItem) => {
@@ -46,10 +61,8 @@ export function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): St
       } else {
         if (defItem.length === 1) {
           return { storeKey: defItem[0], stateFilter: [] };
-        } else if (defItem.length === 2) {
-          return { storeKey: defItem[0], stateFilter: defItem[1] } as StoreDefItemWithKey;
         } else {
-          return { storeKey: defItem[0], stateFilter: defItem[2], storeMapFilter: defItem[1] } as StoreDefItemWithKey;  
+          return parseStoreValDef(defItem[0], defItem[1]!);
         }
       }
     });

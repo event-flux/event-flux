@@ -17,7 +17,7 @@ class TodoStore extends StoreBase<{ state1: string, state2: string }> {
   }
 }
 
-describe('withEventFlux', () => {
+describe('useEventFlux', () => {
   
   test('can get the appStore and stores', () => {
     let appStore = new AppStore();
@@ -28,13 +28,13 @@ describe('withEventFlux', () => {
 
     let propInvoker: any[] = [];
     function MyView(props: any) {
-      let todo1Props = useEventFlux(["todo1Store", ["state1", "state2"]]);
+      let todo1Props = useEventFlux(["todo1Store", ["state1", "state2"]], props);
       expect(Object.keys(todo1Props)).toEqual(["todo1Store", "state1", "state2"]);
 
-      let todo2Props = useEventFlux({ "todo2Store": ["state1", "state2"] });
+      let todo2Props = useEventFlux({ "todo2Store": ["state1", "state2"] }, props);
       expect(Object.keys(todo2Props)).toEqual(["todo2Store", "state1", "state2"]);
 
-      let todo3Props = useEventFlux(props, { "todo2Store": ({ state1 }) => ({ state1 }) });
+      let todo3Props = useEventFlux({ "todo2Store": ({ state1 }: any) => ({ state1 }) }, props);
       expect(Object.keys(todo3Props)).toEqual(["todo2Store", "state1"]);
 
       return <div />;
