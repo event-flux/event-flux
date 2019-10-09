@@ -1,10 +1,10 @@
 import AppStore  from '../AppStore';
 import StoreBase from '../StoreBase';
-import { declareStore } from '../StoreDeclarer';
+import { declareStore, declareStoreList, declareStoreMap } from '../StoreDeclarer';
 import * as React from 'react';
 import { mount, shallow } from 'enzyme';
 import { Provider } from '..';
-import withEventFlux, { transformDefArgs, processState, StoreDefineObj } from '../withEventFlux';
+import withEventFlux, { transformDefArgs, processState, StoreDefineObj, createStateHandler, StoreDefItemWithKey, handleFilterState } from '../withEventFlux';
 import DispatchParent from '../DispatchParent';
 import RecycleStrategy from '../RecycleStrategy';
 
@@ -50,10 +50,41 @@ describe('withEventFlux', () => {
     expect(processState({ a: 1, b: { c: 2 } }, ["a", "b.c"])).toEqual({ a: 1, c: 2 });
   });
 
+  test("createStateHandler and handleFilterState should behave correctly", () => {
+    let defList: StoreDefItemWithKey[] = [
+      { storeKey: "todo1Store", storeType: "Item", stateKey: "todo1", stateFilter: (state: any) => state },
+      { storeKey: "todo2Store", storeType: "List", stateKey: "todo2", stateFilter: (state: any) => state },
+      { storeKey: "todo3Store", storeType: "Map", stateKey: 'todo3', stateFilter: (state: any) => state, storeMapFilter: () => ["key1"] },
+      {
+        storeKey: "todo3Store", storeType: "Map", stateKey: 'todo3', storeMapKey: "todo3-2", as: "todo3Store-2",
+        stateFilter: (state: any) => state,
+        storeMapFilter: () => ["key1"],
+      },
+    ];
+    let handler = createStateHandler(defList[0]);
+    expect(
+      handleFilterState({ todo1: { state1: 1, state2: 2 } }, "todo1", defList[0], handler, null)
+    ).toEqual({ state1: 1, state2: 2 });
+
+    handler = createStateHandler(defList[1]);
+    expect(
+      handleFilterState({ todo2: { 0: { state1: 1, state2: 2 } } }, "todo2", defList[1], handler, null)
+    ).toEqual({ todo2: { 0: { state1: 1, state2: 2 } } });
+
+    handler = createStateHandler(defList[2]);
+    expect(
+      handleFilterState({ todo3: { key1: { state1: 1, state2: 2 } }, key2: { state1: 10 } }, "todo3", defList[2], handler, null)
+    ).toEqual({ todo3: { key1: { state1: 1, state2: 2 } } });
+
+    handler = createStateHandler(defList[3]);
+    expect(
+      handleFilterState({ todo3: { key1: { state1: 1, state2: 2 } }, key2: { state1: 10 } }, "todo3", defList[3], handler, null)
+    ).toEqual({ "todo3-2": { key1: { state1: 1, state2: 2 } } });
+  });
+
   test('can get the appStore and stores', () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStore(TodoStore, { stateKey: 'todo1', storeKey: "todo1Store" }));
-    appStore.registerStore(declareStore(TodoStore, { stateKey: 'todo12', storeKey: "todo2Store" }));
     appStore.init();
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
 
@@ -63,7 +94,7 @@ describe('withEventFlux', () => {
       return <div />;
     }
     const MyViewWrap = withEventFlux(["todo1Store", ["state1", "state2"]])(MyView);
-    const MyViewWrap2 = withEventFlux(["todo2Store", (state: any) => ({ state1: state.state1, state2: state.state2 })])(MyView);
+    const MyViewWrap2 = withEventFlux(["todo1Store", (state: any) => ({ state1: state.state1, state2: state.state2 })])(MyView);
 
     function Fixture() {
       return (
@@ -79,7 +110,7 @@ describe('withEventFlux', () => {
     const wrapper = mount(<Fixture />); // mount/render/shallow when applicable
     // let todoStore = new StoreBase(appStore);
     expect(Object.keys(propInvoker[0])).toEqual(["todo1Store", "state1", "state2"]);
-    expect(Object.keys(propInvoker[1])).toEqual(["todo2Store", "state1", "state2"]);
+    expect(Object.keys(propInvoker[1])).toEqual(["todo1Store", "state1", "state2"]);
 
     appStore.setState({ todo1: { state1: "hello", state2: "hello" } });
     expect(propInvoker[2]).toBeFalsy();
@@ -89,5 +120,44 @@ describe('withEventFlux', () => {
 
     wrapper.unmount();
     expect(appStore.stores).toEqual({});
+  });
+
+  test('can get the appStore and stores', () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStoreList(TodoStore, { stateKey: 'todo2', storeKey: "todo2Store", size: 1 }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", keys: ["key1", "key2"] }));
+    appStore.init();
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+
+    let propInvoker: any[] = [];
+    function MyView(props: any) {
+      propInvoker.push(props);
+      return <div />;
+    }
+    const MyViewWrap = withEventFlux(["todo2Store", ["state1", "state2"]])(MyView);
+    const MyViewWrap2 = withEventFlux(["todo3Store", { filter: ["state1", "state2"] }])(MyView);
+    const MyViewWrap3 = withEventFlux(["todo3Store", { filter: ["state1", "state2"], mapKey: "todo32", as: "todo3Store2" }])(MyView);
+    const MyViewWrap4 = withEventFlux(["todo3Store", { filter: ["state1", "state2"], mapFilter: () => ["key1"] }])(MyView);
+
+    function Fixture() {
+      return (
+        <Provider appStore={appStore}>
+          <div>
+            <MyViewWrap />
+            <MyViewWrap2 />
+            <MyViewWrap3 />
+            <MyViewWrap4 />
+          </div>
+        </Provider>
+      );
+    }
+    
+    const wrapper = mount(<Fixture />); // mount/render/shallow when applicable
+    // let todoStore = new StoreBase(appStore);
+    let storeState = { state1: "state1", state2: "todo2" };
+    expect(propInvoker[0]).toEqual({ todo2Store: appStore.stores.todo2Store, todo2: { 0: storeState } });
+    expect(propInvoker[1]).toEqual({ todo3Store: appStore.stores.todo3Store, todo3: { key1: storeState, key2: storeState } });
+    expect(propInvoker[2]).toEqual({ todo3Store2: appStore.stores.todo3Store, todo32: { key1: storeState, key2: storeState } });
+    expect(propInvoker[3]).toEqual({ todo3Store: appStore.stores.todo3Store, todo3: { key1: storeState } });
   });
 });
