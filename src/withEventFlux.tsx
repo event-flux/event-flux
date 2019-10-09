@@ -74,7 +74,7 @@ export function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): St
   return defList;
 }
 
-export function processState(state: any, handler: string[] | StateFilter) {
+export function processState(state: any = {}, handler: string[] | StateFilter) {
   if (Array.isArray(handler)) {
     let retState: any = {};
     for (let key of handler) {
@@ -91,11 +91,11 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
   let curHandler;
   if (storeDef.storeType === "Item") {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any, stateFunc: string[] | StateFilter) => processState(curState, stateFunc)
+      (curState: any = {}, stateFunc: string[] | StateFilter) => processState(curState, stateFunc)
     );
   } else if (storeDef.storeMapFilter) {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any, stateFunc: string[] | StateFilter, storeMapFilter: StoreMapKeyFilter, stateKey: string, props: any) => {
+      (curState: any = {}, stateFunc: string[] | StateFilter, storeMapFilter: StoreMapKeyFilter, stateKey: string, props: any) => {
         let filterState: { [key: string]: any } = {};
         let keys = storeMapFilter(props);
         for (let key of keys) {
@@ -106,7 +106,7 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
     );
   } else {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any, stateFunc: string[] | StateFilter, stateKey: string) => {
+      (curState: any = {}, stateFunc: string[] | StateFilter, stateKey: string) => {
         let filterState: { [key: string]: any } = {};
         for (let key in curState) {
           filterState[key] = processState(curState[key], stateFunc); 
