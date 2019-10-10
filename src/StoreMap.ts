@@ -97,7 +97,14 @@ export default class StoreMap<T> {
     return disposable;
   }
 
-  add(key: string) {
+  add(key: string | string[]) {
+    if (Array.isArray(key)) {
+      for (let k of key) {
+        this.add(k);
+      }
+      return;
+    }
+
     if (this.storeMap.has(key)) return;
     let newStore = new this._StoreBuilder!(this);
     (newStore as any).mapStoreKey = key;
@@ -108,7 +115,13 @@ export default class StoreMap<T> {
     return newStore._init();
   }
 
-  delete(key: string) {
+  delete(key: string | string[]) {
+    if (Array.isArray(key)) {
+      for (let k of key) {
+        this.delete(k);
+      }
+      return;
+    }
     let store = this.storeMap.get(key);
     store.dispose();
     this.storeMap.delete(key);

@@ -87,4 +87,20 @@ describe('StoreMap', () => {
     expect(storeMap.has("key1")).toBeFalsy();
     expect(storeMap.has("key2")).toBeFalsy();
   });
+
+  test("add and delete store keys", () => {
+    let dispatchParent = { setState: jest.fn() };
+    let storeMap = new StoreMap(dispatchParent);
+    storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
+
+    storeMap.add("key1");
+    expect(Array.from(storeMap.keys())).toEqual(["key1"]);
+    storeMap.delete("key1");
+    expect(Array.from(storeMap.keys())).toEqual([]);
+    
+    storeMap.add(["key1", "key2"]);
+    expect(Array.from(storeMap.keys())).toEqual(["key1", "key2"]);
+    storeMap.delete(["key1"]);
+    expect(Array.from(storeMap.keys())).toEqual(["key2"]);
+  });
 });
