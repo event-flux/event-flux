@@ -122,10 +122,11 @@ describe('withEventFlux', () => {
     expect(appStore.stores).toEqual({});
   });
 
-  test('can get the appStore and stores', () => {
+  test.only('can get the appStore and stores for store map', () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreList(TodoStore, { stateKey: 'todo2', storeKey: "todo2Store", size: 1 }));
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", keys: ["key1", "key2"] }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo4', storeKey: "todo4Store" }));
     appStore.init();
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
 
@@ -137,7 +138,7 @@ describe('withEventFlux', () => {
     const MyViewWrap = withEventFlux(["todo2Store", ["state1", "state2"]])(MyView);
     const MyViewWrap2 = withEventFlux(["todo3Store", { filter: ["state1", "state2"] }])(MyView);
     const MyViewWrap3 = withEventFlux(["todo3Store", { filter: ["state1", "state2"], mapKey: "todo32", as: "todo3Store2" }])(MyView);
-    const MyViewWrap4 = withEventFlux(["todo3Store", { filter: ["state1", "state2"], mapFilter: () => ["key1"] }])(MyView);
+    const MyViewWrap4 = withEventFlux(["todo4Store", { filter: ["state1", "state2"], mapFilter: () => ["key1"] }])(MyView);
 
     function Fixture() {
       return (
@@ -158,7 +159,7 @@ describe('withEventFlux', () => {
     expect(propInvoker[0]).toEqual({ todo2Store: appStore.stores.todo2Store, todo2: { 0: storeState } });
     expect(propInvoker[1]).toEqual({ todo3Store: appStore.stores.todo3Store, todo3: { key1: storeState, key2: storeState } });
     expect(propInvoker[2]).toEqual({ todo3Store2: appStore.stores.todo3Store, todo32: { key1: storeState, key2: storeState } });
-    expect(propInvoker[3]).toEqual({ todo3Store: appStore.stores.todo3Store, todo3: { key1: storeState } });
+    expect(propInvoker[3]).toEqual({ todo4Store: appStore.stores.todo4Store, todo4: { key1: storeState } });
   });
 
   test("withEventFlux for store map should create and release store dynamically", () => {

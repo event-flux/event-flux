@@ -3,6 +3,33 @@ import DispatchItem from './DispatchItem';
 import DispatchParent from './DispatchParent';
 import { DisposableLike, CompositeDisposable } from 'event-kit';
 
+export enum OperateMode {
+  None,
+  Direct,
+  RefCount,
+}
+
+export class OperateModeSwitch {
+  operateMode: OperateMode = OperateMode.None;
+
+  enterRefCountMode() {
+    if (this.operateMode === OperateMode.Direct) {
+      throw new Error(`
+        You request store that use direct mode, so requesting store by "request" method is not allowed. 
+        Try to remove all the "add" invocation and "keys" declarer options.
+      `)
+    }
+    this.operateMode = OperateMode.RefCount;
+  }
+
+  enterDirectMode() {
+    if (this.operateMode === OperateMode.RefCount) {
+      throw new Error(`You request store that use reference count, so requesting store by "add" and "delete" is not allowed.`)
+    }
+    this.operateMode = OperateMode.Direct;
+  }
+}
+
 export default class StoreMap<T> {
   storeMap: Map<string, any> = new Map();
 
@@ -19,6 +46,7 @@ export default class StoreMap<T> {
 
   _keyRefs: { [key: string]: number } = {};
   _disposables = new CompositeDisposable();
+  operateModeSwitch = new OperateModeSwitch();
 
   constructor(appStore: DispatchParent) {
     this._appStore = appStore;
@@ -55,18 +83,20 @@ export default class StoreMap<T> {
   }
 
   requestStore(storeKey: string) {
+    this.operateModeSwitch.enterRefCountMode();
+
     if (this._keyRefs[storeKey]) {
       this._keyRefs[storeKey] += 1;
     } else {
       this._keyRefs[storeKey] = 1;
-      this.add(storeKey);
+      this._addOne(storeKey);
     }
   }
 
   releaseStore(storeKey: string) {
     this._keyRefs[storeKey] -= 1;
     if (this._keyRefs[storeKey] === 0) {
-      this.delete(storeKey);
+      this._deleteOne(storeKey);
     }
   }
 
@@ -76,20 +106,12 @@ export default class StoreMap<T> {
       keys = [keys];
     }
     for (let key of keys) {
-      if (this._keyRefs[key]) {
-        this._keyRefs[key] += 1;
-      } else {
-        this._keyRefs[key] = 1;
-        this.add(key);
-      }
+      this.requestStore(key);
     }
     let disposable = {
       dispose: () => {
         for (let key of keys) {
-          this._keyRefs[key] -= 1;
-          if (this._keyRefs[key] === 0) {
-            this.delete(key);
-          }
+          this.releaseStore(key);
         }
       }
     };
@@ -97,14 +119,7 @@ export default class StoreMap<T> {
     return disposable;
   }
 
-  add(key: string | string[]) {
-    if (Array.isArray(key)) {
-      for (let k of key) {
-        this.add(k);
-      }
-      return;
-    }
-
+  _addOne(key: string) {
     if (this.storeMap.has(key)) return;
     let newStore = new this._StoreBuilder!(this);
     (newStore as any).mapStoreKey = key;
@@ -115,16 +130,32 @@ export default class StoreMap<T> {
     return newStore._init();
   }
 
-  delete(key: string | string[]) {
+  _deleteOne(key: string) {
+    let store = this.storeMap.get(key);
+    store && store.dispose();
+    this.storeMap.delete(key);
+  }
+
+  add(key: string | string[]) {
+    this.operateModeSwitch.enterDirectMode();
+
     if (Array.isArray(key)) {
       for (let k of key) {
-        this.delete(k);
+        this._addOne(k);
       }
       return;
     }
-    let store = this.storeMap.get(key);
-    store.dispose();
-    this.storeMap.delete(key);
+    this._addOne(key);
+  }
+
+  delete(key: string | string[]) {
+    if (Array.isArray(key)) {
+      for (let k of key) {
+        this._deleteOne(k);
+      }
+      return;
+    }
+    this._deleteOne(key);
   }
 
   clear() {
