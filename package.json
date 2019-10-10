@@ -1,6 +1,6 @@
 {
   "name": "event-flux",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
