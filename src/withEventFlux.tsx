@@ -317,11 +317,11 @@ export default function withEventFlux(...args: StoreDefineObj[] | StoreDefineIte
   
   return function(Component: React.ComponentType) {
 
-    return function(props: any) {
+    return React.memo(React.forwardRef(function(props: any, ref) {
       let [retStores, newState] = genStoreAndState(args, props);
       return (
-        <Component {...props} {...retStores} {...newState}/>
+        <Component {...props} {...retStores} {...newState} ref={ref}/>
       );
-    }
+    }));
   }
 }
