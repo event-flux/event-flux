@@ -59,6 +59,10 @@ export default class AppStore implements DispatchParent {
     this.prevState = this.state;
   }
 
+  forceUpdate() {
+    this._sendUpdate();
+  }
+
   handleWillChange(prevState: any, state: any) {
   }
   
