@@ -5,6 +5,7 @@ import * as memoizeOne from 'memoize-one';
 import { StoreDeclarer, StoreListDeclarer, StoreMapDeclarer } from './StoreDeclarer';
 import { StoreMap } from '.';
 import AppStore from './AppStore';
+import { arraysEqual } from './arrayUtils';
 
 const { useContext, useEffect, useMemo, useRef } = React;
 
@@ -13,9 +14,10 @@ export const FilterAll = (state: any) => state;
 export type StateFilter = (state: any) => any;
 
 export interface StoreObjValDef {
-  filter: string[] | StateFilter,
+  filter: string[] | StateFilter;
   mapKey?: string;
   mapFilter?: StoreMapKeyFilter;
+  mapSpread?: StoreMapKeySpread;
   as?: string;
 }
 
@@ -24,6 +26,7 @@ export interface StoreDefineObj {
 }
 
 export type StoreMapKeyFilter = (props: any) => string[];
+export type StoreMapKeySpread = (props: any) => string;
 
 export type StoreDefineItem = string | [string] | [string, string[] | StateFilter | StoreObjValDef];
 
@@ -34,6 +37,7 @@ export interface StoreDefItemWithKey {
   storeKey: string;
   storeType?: StoreType;
   storeMapFilter?: StoreMapKeyFilter;
+  storeMapSpread?: StoreMapKeySpread;
   storeMapKey?: string;
   stateFilter: string[] | StateFilter;
   stateKey?: string;
@@ -47,7 +51,9 @@ function parseStoreValDef(storeKey: string, storeVal: string[] | StateFilter | S
     };
   } else {
     return {
-      storeKey: storeKey, stateFilter: storeVal.filter, storeMapFilter: storeVal.mapFilter, as: storeVal.as, storeMapKey: storeVal.mapKey,
+      storeKey: storeKey, stateFilter: storeVal.filter, 
+      storeMapFilter: storeVal.mapFilter, storeMapSpread: storeVal.mapSpread, 
+      as: storeVal.as, storeMapKey: storeVal.mapKey,
     };
   }
 }
@@ -104,6 +110,13 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
         return { [stateKey]: filterState };
       }
     );
+  } else if (storeDef.storeMapSpread) {
+    curHandler = (memoizeOne.default || memoizeOne)(
+      (curState: any = {}, stateFunc: string[] | StateFilter, storeMapSpread: StoreMapKeySpread, props: any) => {
+        let key = storeMapSpread(props);
+        return processState(curState[key], stateFunc); 
+      }
+    );
   } else {
     curHandler = (memoizeOne.default || memoizeOne)(
       (curState: any = {}, stateFunc: string[] | StateFilter, stateKey: string) => {
@@ -123,6 +136,8 @@ export function handleFilterState(state: any, stateKey: string, storeDef: StoreD
     return filterHandler(state[stateKey], storeDef.stateFilter);
   } else if (storeDef.storeMapFilter) {
     return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapFilter, storeDef.storeMapKey || storeDef.stateKey, props);
+  } else if (storeDef.storeMapSpread) {
+    return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapSpread, props);
   } else {
     return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapKey || storeDef.stateKey);
   }
@@ -130,14 +145,22 @@ export function handleFilterState(state: any, stateKey: string, storeDef: StoreD
 
 type ReqStores = { [storeKey: string]: DispatchItem };
 type ReqStoreMaps = { [storeKey: string]: { store: DispatchItem, storeMapFilter: StoreMapKeyFilter } };
+type ReqStoreMapSpreads = { [storeKey: string]: { store: DispatchItem, storeMapSpread: StoreMapKeySpread } };
 
-function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined): [ReqStores, ReqStoreMaps] {
+function getStoreKey(storeDef: StoreDefItemWithKey, storeKey: string) {
+  storeKey = storeDef.as || storeKey;
+  return storeDef.storeMapSpread ? "_" + storeKey : storeKey;
+}
+
+function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined): [ReqStores, ReqStoreMaps, ReqStoreMapSpreads] {
   let retStores = useMemo(() => {
     let reqStores: ReqStores = {};
     let reqStoreMaps: ReqStoreMaps = {};
+    let reqStoreMapSpreads: ReqStoreMapSpreads = {};
+
     for (let storeDef of defList) {
       let storeKey = storeDef.storeKey;
-      let store = reqStores[storeDef.as || storeKey] = _appStore!.requestStore(storeKey);
+      let store = reqStores[getStoreKey(storeDef, storeKey)] = _appStore!.requestStore(storeKey);
       let storeDeclarer = _appStore!._storeRegisterMap[storeKey];
 
       if (StoreDeclarer.isStore(storeDeclarer)) {
@@ -148,11 +171,13 @@ function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | un
         storeDef.storeType = "Map";
         if (storeDef.storeMapFilter) {
           reqStoreMaps[storeKey] = { store, storeMapFilter: storeDef.storeMapFilter };
+        } else if (storeDef.storeMapSpread) {
+          reqStoreMapSpreads[storeDef.as || storeDef.storeKey] = { store, storeMapSpread: storeDef.storeMapSpread };
         }
       }
       storeDef.stateKey = store._stateKey!;
     }
-    return [reqStores, reqStoreMaps] as [ReqStores, ReqStoreMaps];
+    return [reqStores, reqStoreMaps, reqStoreMapSpreads] as [ReqStores, ReqStoreMaps, ReqStoreMapSpreads];
   }, []);
 
   useEffect(() =>  {
@@ -169,29 +194,34 @@ function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | un
 function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
   const storeMapRef = useRef<any>({});
   let isStoreChanged = false;
+
+  let filterKeyRef: { [key: string]: string[] } = {};
   for (let storeKey in reqStoreMaps) {
     let { store, storeMapFilter } = reqStoreMaps[storeKey];
+
     let filterKeys = storeMapFilter(props);
-    if (filterKeys) {
-      for (let key of filterKeys) {
-        isStoreChanged = true;
-        (store as StoreMap<any>).requestStore(key);
-      }
-    }
-    
-    useEffect(() => {
-      storeMapRef.current[storeKey] = filterKeys;
-    });
-
     let prevKeys = storeMapRef.current[storeKey];
-    if (prevKeys) {
-      for (let key of prevKeys) {
-        (store as StoreMap<any>).releaseStore(key);
+
+    if (!arraysEqual(filterKeys, prevKeys)) {
+      if (filterKeys) {
+        for (let key of filterKeys) {
+          isStoreChanged = true;
+          (store as StoreMap<any>).requestStore(key);
+        }
+      }
+      if (prevKeys) {
+        for (let key of prevKeys) {
+          (store as StoreMap<any>).releaseStore(key);
+        }
       }
     }
-  }
 
+    filterKeyRef[storeKey] = filterKeys;
+  }
+  
   useEffect(() => {
+    storeMapRef.current = filterKeyRef;
+
     return () => {
       for (let storeKey in reqStoreMaps) {
         let { store } = reqStoreMaps[storeKey];
@@ -205,7 +235,48 @@ function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
     }
   }, []);
   return isStoreChanged;
-} 
+}
+
+function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props: any, reqStores: ReqStores) {
+  const storeMapRef = useRef<any>({});
+  let isStoreChanged = false;
+
+  let filterKeyRef: { [key: string]: string } = {};
+
+  for (let storeKey in reqStoreMaps) {
+    let { store, storeMapSpread } = reqStoreMaps[storeKey];
+    let filterKey = storeMapSpread(props);
+    let prevKey = storeMapRef.current[storeKey];
+
+    if (filterKey !== prevKey) {
+      if (filterKey) {
+        isStoreChanged = true;
+        (store as StoreMap<any>).requestStore(filterKey);
+        reqStores[storeKey] = store.get(filterKey);
+      }
+      if (prevKey) {
+        (store as StoreMap<any>).releaseStore(filterKey);
+      }
+    }
+    
+    filterKeyRef[storeKey] = filterKey;
+  }
+
+  useEffect(() => {
+    storeMapRef.current = filterKeyRef;
+
+    return () => {
+      for (let storeKey in reqStoreMaps) {
+        let { store } = reqStoreMaps[storeKey];
+        let prevKey = storeMapRef.current[storeKey];
+        if (prevKey) {
+          (store as StoreMap<any>).releaseStore(prevKey);
+        }
+      }
+    }
+  }, []);
+  return isStoreChanged;
+}
 
 function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined, state: any, props: any, isStoreChange: boolean) {
   let stateRefs = useRef<any>([]);
@@ -233,9 +304,9 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[], pro
 
   let defList: StoreDefItemWithKey[] = useMemo(() => transformDefArgs(args), []);
 
-  let [retStores, reqStoreMaps] = useReqForStore(defList, _appStore);
+  let [retStores, reqStoreMaps, reqStoreMapSpreads] = useReqForStore(defList, _appStore);
   
-  let isStoreChange = useReqForStoreMap(reqStoreMaps, props);
+  let isStoreChange = useReqForStoreMap(reqStoreMaps, props) || useReqForStoreMapSpread(reqStoreMapSpreads, props, retStores);
 
   let newState = useFilterState(defList, _appStore, state, props, isStoreChange);
 
