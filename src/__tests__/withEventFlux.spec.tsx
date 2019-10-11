@@ -168,10 +168,12 @@ describe('withEventFlux', () => {
     appStore.init();
     // appStore.setRecycleStrategy(RecycleStrategy.Urgent);
 
+    let propInvoker: any;
     function MyView(props: any) {
+      propInvoker = props;
       return <div />;
     }
-    const MyViewWrap = withEventFlux(["todo3Store", { filter: ["state1", "state2"], mapFilter: (prop: any) => prop.keys }])(MyView);
+    const MyViewWrap = withEventFlux(["todo3Store", { filter: ["state1"], mapFilter: (prop: any) => prop.keys }])(MyView);
     function Fixture(props: any) {
       return (
         <Provider appStore={appStore}>
@@ -183,11 +185,15 @@ describe('withEventFlux', () => {
     const wrapper = mount(<Fixture keys={["key1"]}/>);
     expect(Array.from(appStore.stores.todo3Store.keys())).toEqual(["key1"]);
     expect(appStore.stores.todo3Store._keyRefs["key1"]).toEqual(1);
+    expect(propInvoker).toEqual({ keys: ["key1"], todo3Store: appStore.stores.todo3Store, todo3: { key1: { state1: "state1" } } });
 
     wrapper.setProps({ keys: ["key1", "key2" ]});
     expect(Array.from(appStore.stores.todo3Store.keys())).toEqual(["key1", "key2"]);
     expect(appStore.stores.todo3Store._keyRefs["key1"]).toEqual(1);
     expect(appStore.stores.todo3Store._keyRefs["key2"]).toEqual(1);
+    expect(propInvoker).toEqual({ 
+      keys: ["key1", "key2"], todo3Store: appStore.stores.todo3Store, todo3: { key1: { state1: "state1" }, key2: { state1: "state1" } } 
+    });
 
     wrapper.setProps({ keys: ["key2" ]});
     expect(Array.from(appStore.stores.todo3Store.keys())).toEqual(["key2"]);

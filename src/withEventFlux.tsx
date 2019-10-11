@@ -168,11 +168,13 @@ function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | un
 
 function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
   const storeMapRef = useRef<any>({});
+  let isStoreChanged = false;
   for (let storeKey in reqStoreMaps) {
     let { store, storeMapFilter } = reqStoreMaps[storeKey];
     let filterKeys = storeMapFilter(props);
     if (filterKeys) {
       for (let key of filterKeys) {
+        isStoreChanged = true;
         (store as StoreMap<any>).requestStore(key);
       }
     }
@@ -202,26 +204,26 @@ function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
       }
     }
   }, []);
+  return isStoreChanged;
 } 
 
-function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined, state: any, props: any) {
+function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined, state: any, props: any, isStoreChange: boolean) {
   let stateRefs = useRef<any>([]);
 
   let newState;
   for (let storeDef of defList) {
     let stateKey: string = storeDef.stateKey!;
     let curHandler = stateRefs.current[stateKey];
+    let isFirstReq = false;
     if (!curHandler) {
       stateRefs.current[stateKey] = curHandler = createStateHandler(storeDef);
-      // When we first create the store, we get the state from the appStore
-      // Object.assign(newState, curHandler(stateKey ? _appStore!.state[stateKey] : _appStore!.state, storeDef.stateFilter, storeDef));
+      isFirstReq = true;
       let thisState = handleFilterState(_appStore!.state, stateKey, storeDef, curHandler, props);
       newState = newState == null ? thisState : Object.assign(newState, thisState);
-    } else {
-      // Object.assign(newState, curHandler(stateKey ? state[stateKey] : state, storeDef.stateFilter, storeDef));
-      let thisState = handleFilterState(state, stateKey, storeDef, curHandler, props);
-      newState = newState == null ? thisState : Object.assign(newState, thisState);
-    }
+    }  
+    // When we first create the store or the store has changed, we get the state from the appStore
+    let thisState = handleFilterState(isFirstReq || isStoreChange ? _appStore!.state : state, stateKey, storeDef, curHandler, props);
+    newState = newState == null ? thisState : Object.assign(newState, thisState);
   }
   return newState;
 }
@@ -233,9 +235,9 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[], pro
 
   let [retStores, reqStoreMaps] = useReqForStore(defList, _appStore);
   
-  useReqForStoreMap(reqStoreMaps, props);
+  let isStoreChange = useReqForStoreMap(reqStoreMaps, props);
 
-  let newState = useFilterState(defList, _appStore, state, props);
+  let newState = useFilterState(defList, _appStore, state, props, isStoreChange);
 
   return [retStores, newState];
 }
