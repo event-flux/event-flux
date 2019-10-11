@@ -122,7 +122,7 @@ describe('withEventFlux', () => {
     expect(appStore.stores).toEqual({});
   });
 
-  test.only('can get the appStore and stores for store map', () => {
+  test('can get the appStore and stores for store map', () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreList(TodoStore, { stateKey: 'todo2', storeKey: "todo2Store", size: 1 }));
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", keys: ["key1", "key2"] }));
@@ -162,7 +162,7 @@ describe('withEventFlux', () => {
     expect(propInvoker[3]).toEqual({ todo4Store: appStore.stores.todo4Store, todo4: { key1: storeState } });
   });
 
-  test("withEventFlux for store map should create and release store dynamically", () => {
+  test.only("withEventFlux for store map should create and release store dynamically", () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", }));
     appStore.init();

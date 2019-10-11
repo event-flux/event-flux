@@ -221,7 +221,9 @@ function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
   
   useEffect(() => {
     storeMapRef.current = filterKeyRef;
+  }, [filterKeyRef]);
 
+  useEffect(() => {
     return () => {
       for (let storeKey in reqStoreMaps) {
         let { store } = reqStoreMaps[storeKey];
@@ -264,7 +266,9 @@ function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props: any, r
 
   useEffect(() => {
     storeMapRef.current = filterKeyRef;
+  }, [filterKeyRef]);
 
+  useEffect(() => {
     return () => {
       for (let storeKey in reqStoreMaps) {
         let { store } = reqStoreMaps[storeKey];
