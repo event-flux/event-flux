@@ -152,7 +152,7 @@ function getStoreKey(storeDef: StoreDefItemWithKey, storeKey: string) {
   return storeDef.storeMapSpread ? "_" + storeKey : storeKey;
 }
 
-function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined): [ReqStores, ReqStoreMaps, ReqStoreMapSpreads] {
+export function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined): [ReqStores, ReqStoreMaps, ReqStoreMapSpreads] {
   let retStores = useMemo(() => {
     let reqStores: ReqStores = {};
     let reqStoreMaps: ReqStoreMaps = {};
@@ -191,7 +191,7 @@ function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | un
   return retStores;
 }
 
-function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
+export function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
   const storeMapRef = useRef<any>({});
   let isStoreChanged = false;
 
@@ -239,7 +239,7 @@ function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
   return isStoreChanged;
 }
 
-function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props: any, reqStores: ReqStores) {
+export function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props: any, reqStores: ReqStores) {
   const storeMapRef = useRef<any>({});
   let isStoreChanged = false;
 
@@ -282,7 +282,7 @@ function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props: any, r
   return isStoreChanged;
 }
 
-function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined, state: any, props: any, isStoreChange: boolean) {
+export function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined, state: any, props: any, isStoreChange: boolean) {
   let stateRefs = useRef<any>([]);
 
   let newState;

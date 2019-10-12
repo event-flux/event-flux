@@ -4,7 +4,7 @@ import { declareStore, declareStoreList, declareStoreMap } from '../StoreDeclare
 import * as React from 'react';
 import { mount, shallow } from 'enzyme';
 import { Provider } from '..';
-import withEventFlux, { transformDefArgs, processState, StoreDefineObj, createStateHandler, StoreDefItemWithKey, handleFilterState } from '../withEventFlux';
+import withEventFlux, { transformDefArgs, processState, StoreDefineObj, createStateHandler, StoreDefItemWithKey, handleFilterState, useReqForStore } from '../withEventFlux';
 import DispatchParent from '../DispatchParent';
 import RecycleStrategy from '../RecycleStrategy';
 
@@ -122,7 +122,7 @@ describe('withEventFlux', () => {
     expect(appStore.stores).toEqual({});
   });
 
-  test.only('can get the appStore and stores for store map', () => {
+  test('can get the appStore and stores for store map', () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreList(TodoStore, { stateKey: 'todo2', storeKey: "todo2Store", size: 1 }));
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", keys: ["key1", "key2"] }));
@@ -206,5 +206,61 @@ describe('withEventFlux', () => {
 
     wrapper.unmount();
     expect(Array.from(appStore.stores.todo3Store.keys())).toEqual([]);
+  });
+
+  test("useReqForStore should get the correct return stores", () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStoreList(TodoStore, { stateKey: 'todo2', storeKey: "todo2Store", size: 1 }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", keys: ["key1", "key2"] }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo4', storeKey: "todo4Store" }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo5', storeKey: "todo5Store" }));
+    appStore.init();
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+
+    let retStores: any;
+    let defList: StoreDefItemWithKey[] | undefined;
+
+    jest.spyOn(appStore, "requestStore");
+    jest.spyOn(appStore, "releaseStore");
+
+    function MyView(props: any) {
+      defList = transformDefArgs([{ 
+        todo2Store: ["state1", "state2"],
+        todo3Store: { filter: ["state1", "state2"], mapKey: "todo32", as: "todo3Store2" },
+        todo4Store: { filter: ["state1" ], mapFilter: () => ["key1"], as: "todo4Store2", mapKey: "todo42" },
+        todo5Store: { filter: ["state1" ], mapSpread: () => "key1", as: "todo5Store2" },
+      }]);
+      retStores = useReqForStore(defList, appStore);
+      
+      return <div />;
+    }
+
+    let wrapper = mount(<MyView />);
+
+    let [reqStores, reqStoreMaps, reqStoreMapSpreads] = retStores!;
+    expect(reqStores).toEqual({
+      todo2Store: appStore.stores.todo2Store,
+      todo3Store2: appStore.stores.todo3Store,
+      todo4Store2: appStore.stores.todo4Store,
+      _todo5Store2: appStore.stores.todo5Store,
+    });
+    expect(defList!.map(item => item.storeType)).toEqual(["List", "Map", "Map", "Map"]);
+    expect(reqStoreMaps).toEqual({ 
+      todo4Store: { store: appStore.stores.todo4Store, storeMapFilter: defList![2].storeMapFilter } 
+    });
+    expect(reqStoreMapSpreads).toEqual({
+      todo5Store2: { store: appStore.stores.todo5Store, storeMapSpread: defList![3].storeMapSpread } 
+    });
+    expect(appStore.requestStore).toHaveBeenCalledTimes(4);
+    expect(appStore.releaseStore).toHaveBeenCalledTimes(0);
+
+    wrapper.setProps({ prop1: "new" });
+    expect(appStore.requestStore).toHaveBeenCalledTimes(4);
+    expect(appStore.releaseStore).toHaveBeenCalledTimes(0);
+
+    wrapper.unmount();
+    expect(appStore.requestStore).toHaveBeenCalledTimes(4);
+    expect(appStore.releaseStore).toHaveBeenCalledTimes(4);
+    expect(appStore.stores).toEqual({});
   });
 });
