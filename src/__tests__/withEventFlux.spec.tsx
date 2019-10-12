@@ -122,7 +122,7 @@ describe('withEventFlux', () => {
     expect(appStore.stores).toEqual({});
   });
 
-  test('can get the appStore and stores for store map', () => {
+  test.only('can get the appStore and stores for store map', () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreList(TodoStore, { stateKey: 'todo2', storeKey: "todo2Store", size: 1 }));
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", keys: ["key1", "key2"] }));
@@ -139,6 +139,7 @@ describe('withEventFlux', () => {
     const MyViewWrap2 = withEventFlux(["todo3Store", { filter: ["state1", "state2"] }])(MyView);
     const MyViewWrap3 = withEventFlux(["todo3Store", { filter: ["state1", "state2"], mapKey: "todo32", as: "todo3Store2" }])(MyView);
     const MyViewWrap4 = withEventFlux(["todo4Store", { filter: ["state1", "state2"], mapFilter: () => ["key1"] }])(MyView);
+    const MyViewWrap5 = withEventFlux(["todo4Store", { filter: ["state1", "state2"], mapSpread: () => "key1" }])(MyView);
 
     function Fixture() {
       return (
@@ -148,6 +149,7 @@ describe('withEventFlux', () => {
             <MyViewWrap2 />
             <MyViewWrap3 />
             <MyViewWrap4 />
+            <MyViewWrap5 />
           </div>
         </Provider>
       );
@@ -160,9 +162,12 @@ describe('withEventFlux', () => {
     expect(propInvoker[1]).toEqual({ todo3Store: appStore.stores.todo3Store, todo3: { key1: storeState, key2: storeState } });
     expect(propInvoker[2]).toEqual({ todo3Store2: appStore.stores.todo3Store, todo32: { key1: storeState, key2: storeState } });
     expect(propInvoker[3]).toEqual({ todo4Store: appStore.stores.todo4Store, todo4: { key1: storeState } });
+    expect(propInvoker[4]).toEqual({ 
+      _todo4Store: appStore.stores.todo4Store, todo4Store: appStore.stores.todo4Store.get("key1"), ...storeState 
+    });
   });
 
-  test.only("withEventFlux for store map should create and release store dynamically", () => {
+  test("withEventFlux for store map should create and release store dynamically", () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo3', storeKey: "todo3Store", }));
     appStore.init();

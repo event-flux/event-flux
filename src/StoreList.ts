@@ -59,7 +59,7 @@ export default class StoreList<T> {
       let initList = [];
       for (let i = this.length; i < count; ++i) {
         let newStore = new this._StoreBuilder!(this);
-        (newStore as any).listStoreKey = i;
+        newStore.listIndex = i;
 
         let initState = this.__initStates__ ? this.__initStates__[i] : undefined;
         newStore._inject(this._StoreBuilder!, i.toString(), this._depStores, initState, {});

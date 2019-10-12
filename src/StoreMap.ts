@@ -122,7 +122,7 @@ export default class StoreMap<T> {
   _addOne(key: string) {
     if (this.storeMap.has(key)) return;
     let newStore = new this._StoreBuilder!(this);
-    (newStore as any).mapStoreKey = key;
+    newStore.mapKey = key;
 
     let initState = this.__initStates__ ? this.__initStates__[key] : undefined;
     newStore._inject(this._StoreBuilder!, key, this._depStores, initState, {});

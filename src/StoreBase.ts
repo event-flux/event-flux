@@ -38,7 +38,7 @@ export function returnReducer(target: any, propertyKey: string, descriptor: Prop
   }
 }
 
-export default class StoreBase<StateT> {
+export default class StoreBase<StateT> implements DispatchItem {
   state: StateT = {} as StateT;
 
   _emitter = new Emitter();
@@ -55,6 +55,9 @@ export default class StoreBase<StateT> {
   __enableUpdate: boolean = true;
   _hasUpdate = false;
 
+  mapKey?: string;
+  listIndex?: number;
+  
   [storeKey: string]: any;
 
   static isStore: (store: any) => boolean;

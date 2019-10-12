@@ -27,5 +27,8 @@ export default interface DispatchItem {
 
   _stateKey: string | undefined;
 
+  mapKey?: string;
+  listIndex?: number;
+
   [key: string]: any;
 }
