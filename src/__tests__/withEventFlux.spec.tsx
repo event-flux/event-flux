@@ -4,7 +4,11 @@ import { declareStore, declareStoreList, declareStoreMap } from '../StoreDeclare
 import * as React from 'react';
 import { mount, shallow } from 'enzyme';
 import { Provider } from '..';
-import withEventFlux, { transformDefArgs, processState, StoreDefineObj, createStateHandler, StoreDefItemWithKey, handleFilterState, useReqForStore } from '../withEventFlux';
+import withEventFlux, { 
+  transformDefArgs, processState, StoreDefineObj, createStateHandler, 
+  StoreDefItemWithKey, handleFilterState, 
+  useReqForStore, useReqForStoreMap, useReqForStoreMapSpread, useFilterState, genStoreAndState
+} from '../withEventFlux';
 import DispatchParent from '../DispatchParent';
 import RecycleStrategy from '../RecycleStrategy';
 
@@ -262,5 +266,149 @@ describe('withEventFlux', () => {
     expect(appStore.requestStore).toHaveBeenCalledTimes(4);
     expect(appStore.releaseStore).toHaveBeenCalledTimes(4);
     expect(appStore.stores).toEqual({});
+  });
+
+  test("useReqForStoreMap should get the correct return stores", () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo4', storeKey: "todo4Store" }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo5', storeKey: "todo5Store" }));
+    appStore.init();
+    // appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+
+    let isStoreChange: boolean = false;
+    function MyView(props: any) {
+      let defList = transformDefArgs([{ 
+        todo4Store: { filter: ["state1" ], mapFilter: (props) => props.keys, as: "todo4Store2", mapKey: "todo42" },
+        // todo5Store: { filter: ["state1" ], mapSpread: props => props, as: "todo5Store2" },
+      }]);
+      let [retStores, reqStoreMaps] = useReqForStore(defList, appStore);
+
+      jest.spyOn(appStore.stores.todo4Store, "requestStore");
+      jest.spyOn(appStore.stores.todo4Store, "releaseStore");
+      isStoreChange = useReqForStoreMap(reqStoreMaps, props);
+      return <div />;
+    }
+    let wrapper = mount(<MyView keys={["key1"]}/>);
+
+    expect(isStoreChange).toBe(true);
+    expect(appStore.stores.todo4Store.requestStore).toHaveBeenCalledTimes(1);
+    expect(appStore.stores.todo4Store.releaseStore).toHaveBeenCalledTimes(0);
+
+    wrapper.setProps({ keys: ["key1", "key2" ] });
+    expect(isStoreChange).toBe(true);
+    expect(appStore.stores.todo4Store.requestStore).toHaveBeenCalledTimes(3);
+    expect(appStore.stores.todo4Store.releaseStore).toHaveBeenCalledTimes(1);
+    expect(appStore.stores.todo4Store._keyRefs["key1"]).toBe(1);
+
+    wrapper.setProps({ keys: ["key1", "key2" ] });
+    expect(isStoreChange).toBe(false);
+    expect(appStore.stores.todo4Store.requestStore).toHaveBeenCalledTimes(3);
+    expect(appStore.stores.todo4Store.releaseStore).toHaveBeenCalledTimes(1);
+
+    wrapper.unmount();
+    expect(appStore.stores.todo4Store.requestStore).toHaveBeenCalledTimes(3);
+    expect(appStore.stores.todo4Store.releaseStore).toHaveBeenCalledTimes(3);
+    expect(Array.from(appStore.stores.todo4Store.storeMap.keys())).toEqual([]);
+  });
+
+  test("useReqForStoreMapSpread should get the correct return stores", () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo4', storeKey: "todo4Store" }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo5', storeKey: "todo5Store" }));
+    appStore.init();
+    // appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+
+    let isStoreChange: boolean = false;
+    let retStores;
+    function MyView(props: any) {
+      let defList = transformDefArgs([{ 
+        todo5Store: { filter: ["state1" ], mapSpread: (props) => props.keys, as: "todo5Store2" },
+      }]);
+      let [_retStores, reqStoreMaps, reqStoreMapSpreads] = useReqForStore(defList, appStore);
+      retStores = _retStores;
+
+      jest.spyOn(appStore.stores.todo5Store, "requestStore");
+      jest.spyOn(appStore.stores.todo5Store, "releaseStore");
+      isStoreChange = useReqForStoreMapSpread(reqStoreMapSpreads, props, retStores);
+      return <div />;
+    }
+    let wrapper = mount(<MyView keys={"key1"}/>);
+
+    expect(isStoreChange).toBe(true);
+    expect(appStore.stores.todo5Store.requestStore).toHaveBeenCalledTimes(1);
+    expect(appStore.stores.todo5Store.releaseStore).toHaveBeenCalledTimes(0);
+    expect(Array.from(appStore.stores.todo5Store.storeMap.keys())).toEqual(["key1"]);
+    expect(retStores).toEqual({ 
+      _todo5Store2: appStore.stores.todo5Store, 
+      todo5Store2: appStore.stores.todo5Store.get("key1") 
+    });
+
+    wrapper.setProps({ keys: "key2" });
+    expect(isStoreChange).toBe(true);
+    expect(appStore.stores.todo5Store.requestStore).toHaveBeenCalledTimes(2);
+    expect(appStore.stores.todo5Store.releaseStore).toHaveBeenCalledTimes(1);
+    expect(appStore.stores.todo5Store._keyRefs["key2"]).toBe(1);
+
+    wrapper.setProps({ keys: "key2" });
+    expect(isStoreChange).toBe(false);
+    expect(appStore.stores.todo5Store.requestStore).toHaveBeenCalledTimes(2);
+    expect(appStore.stores.todo5Store.releaseStore).toHaveBeenCalledTimes(1);
+
+    wrapper.unmount();
+    expect(appStore.stores.todo5Store.requestStore).toHaveBeenCalledTimes(2);
+    expect(appStore.stores.todo5Store.releaseStore).toHaveBeenCalledTimes(2);
+    expect(Array.from(appStore.stores.todo5Store.storeMap.keys())).toEqual([]);
+  });
+
+  test.only("useFilterState should get the correct return state", () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo4', storeKey: "todo4Store" }));
+    appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo5', storeKey: "todo5Store" }));
+    appStore.init();
+
+    let retStores;
+    let newState;
+
+    function MyView(props: any) {
+      [retStores, newState] = genStoreAndState([{
+        todo4Store: { filter: ["state1" ], mapFilter: (props) => props.filterKeys, as: "todo4Store2", mapKey: "todo4_" },
+        todo5Store: { filter: ["state1" ], mapSpread: (props) => props.spreadKey, as: "todo5Store2" },
+      }], props);
+      return <div />;
+    }
+
+    function Fixture(props: any) {
+      return (
+        <Provider appStore={appStore}>
+          <MyView {...props}/>
+        </Provider>
+      );
+    }
+
+    const wrapper = mount(<Fixture filterKeys={["key1", "key2"]} spreadKey="key1"/>);
+    expect(newState).toEqual({
+      todo4_: { key1: { state1: "state1" }, key2: { state1: "state1" } },
+      state1: "state1",
+    });
+
+    appStore.setState({ todo5: { key1: { state1: "hello" } } })
+    wrapper.setProps({ filterKeys: ["key1"], spreadKey: "key1" });
+    expect(newState).toEqual({
+      todo4_: { key1: { state1: "state1" } },
+      state1: "hello",
+    });
+    jest.runAllTimers();
+
+    appStore.setState({ todo5: { key1: { state1: "world" } } });
+    wrapper.setProps({ filterKeys: ["key1"], spreadKey: "key1" });
+    expect(newState).toEqual({
+      todo4_: { key1: { state1: "state1" } },
+      state1: "hello",
+    });
+    jest.runAllTimers();
+    expect(newState).toEqual({
+      todo4_: { key1: { state1: "state1" } },
+      state1: "world",
+    });
   });
 });

@@ -257,7 +257,7 @@ export function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props:
         reqStores[storeKey] = store.get(filterKey);
       }
       if (prevKey) {
-        (store as StoreMap<any>).releaseStore(filterKey);
+        (store as StoreMap<any>).releaseStore(prevKey);
       }
     }
     
@@ -310,9 +310,10 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[], pro
 
   let [retStores, reqStoreMaps, reqStoreMapSpreads] = useReqForStore(defList, _appStore);
   
-  let isStoreChange = useReqForStoreMap(reqStoreMaps, props) || useReqForStoreMapSpread(reqStoreMapSpreads, props, retStores);
+  let isStoreChange = useReqForStoreMap(reqStoreMaps, props);
+  let isSpreadChange = useReqForStoreMapSpread(reqStoreMapSpreads, props, retStores);
 
-  let newState = useFilterState(defList, _appStore, state, props, isStoreChange);
+  let newState = useFilterState(defList, _appStore, state, props, isStoreChange || isSpreadChange);
 
   return [retStores, newState];
 }
