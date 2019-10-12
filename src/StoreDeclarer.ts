@@ -4,9 +4,10 @@ import StoreList from "./StoreList";
 import DispatchParent from "./DispatchParent";
 import StoreMap from "./StoreMap";
 
-interface IGenericOptions {
+export interface IGenericOptions {
   stateKey?: string; 
   storeKey?: string;
+  lifetime?: "static" | "dynamic";
   [key: string]: any;
 }
 
@@ -47,7 +48,7 @@ export interface StoreMapConstructor<T> {
   new (appStore: DispatchParent | AppStore): StoreMap<T>;
 }
 
-export interface StoreDeclarerOptions {
+export interface StoreDeclarerOptions extends IGenericOptions {
   args?: any;
   storeKey?: string;
   stateKey?: string;
@@ -82,7 +83,7 @@ export function declareStore<T>(Store: StoreBaseConstructor<T>, depStoreNames?: 
   return new StoreDeclarer(Store, depStoreNames, options);
 }
 
-export interface StoreListDeclarerOptions {
+export interface StoreListDeclarerOptions extends IGenericOptions {
   args?: [any];
   storeKey?: string;
   stateKey?: string;
@@ -121,7 +122,7 @@ export function declareStoreList<T>(Store: StoreBaseConstructor<T>, depStoreName
 }
 
 // when directInsert is true, then the child state will set into the store directly.
-export interface StoreMapDeclarerOptions {
+export interface StoreMapDeclarerOptions extends IGenericOptions {
   args?: [any];
   storeKey?: string;
   stateKey?: string;

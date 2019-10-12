@@ -78,7 +78,7 @@ export default class AppStore implements DispatchParent {
     };
   }
 
-  preloadStores(stores: string[]) {
+  preloadStores(stores: string[], lifetime: "static" | "dynamic" = "dynamic") {
     let allDepList: string[] = [];
     for (let storeKey of stores) {
       let store = this.stores[this._getStoreKey(storeKey)];
@@ -86,7 +86,9 @@ export default class AppStore implements DispatchParent {
         let depList = this._createStoreAndInject(storeKey);
         allDepList = allDepList.concat(depList);
         // For preload stores, it need not add reference count.
-        this.stores[this._getStoreKey(storeKey)]._decreaseRef(); 
+        if (lifetime === "dynamic") {
+          this.stores[this._getStoreKey(storeKey)]._decreaseRef(); 
+        }
       }
     }
     // Wait for all the stores and the dependencies init.
@@ -98,11 +100,25 @@ export default class AppStore implements DispatchParent {
     return Promise.all(initPromises);
   }
 
+  preloadStaticStores() {
+    let registerMap = this._storeRegisterMap;
+    let preloads: string[] = [];
+    for (let storeKey in registerMap) {
+      if (registerMap[storeKey].options!.lifetime === "static") {
+        preloads.push(storeKey);
+      }
+    }
+    return this.preloadStores(preloads, "static");
+  }
+
   init() {
-    this._isInit = true;    
+    this._isInit = true;
     this.prevState = this.state;
 
     this._cycleCollections = searchCycleCollection(this._storeRegisterMap);
+    if (typeof window === "object") {
+      this.preloadStaticStores();
+    }
     return this;
   }
 
