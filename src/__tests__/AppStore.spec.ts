@@ -218,6 +218,22 @@ describe('AppStore', () => {
     expect(appStore.stores).toEqual({});
   });
 
+  test("the store declarer with lifetime=static should not dispose", () => {
+    class Todo1Store extends StoreBase<any> {}
+    class Todo2Store extends StoreBase<any> {}
+    class Todo3Store extends StoreBase<any> {}
+
+    let appStore = new AppStore({ todo3: { hello: "world" } });
+    appStore.registerStore(
+      declareStore(Todo1Store, ["todo2Store"],  { lifetime: "static" }),
+      declareStore(Todo2Store, ["todo1Store"], { lifetime: "dynamic" }),
+    );
+    appStore.init();
+    
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+    expect(Object.keys(appStore.stores).sort()).toEqual(["todo1Store", "todo2Store"]);
+  });
+
   test("should transfer storeOpts to _createStore and _deleteStore", () => {
     let appStore = new AppStore([declareStore(StoreBase, [], { storeKey: "helloStore" })]);
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
