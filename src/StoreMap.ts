@@ -2,6 +2,7 @@ import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from 
 import DispatchItem from './DispatchItem';
 import DispatchParent from './DispatchParent';
 import { DisposableLike, CompositeDisposable } from 'event-kit';
+import { RecycleStrategy, AppStore } from '.';
 
 export enum OperateMode {
   None,
@@ -78,6 +79,16 @@ export default class StoreMap<T> {
     }
   }
 
+  // Dispose all the sub stores that reference count is 0
+  _disposeSubStores() {
+    let keyRefs = this._keyRefs;
+    for (let storeKey in keyRefs) {
+      if (keyRefs[storeKey] === 0 && this.storeMap.has(storeKey)) {
+        this._deleteOne(storeKey);
+      }
+    }
+  }
+
   setInitStates(initStates: any) {
     this.__initStates__ = initStates;
   }
@@ -95,7 +106,7 @@ export default class StoreMap<T> {
 
   releaseStore(storeKey: string) {
     this._keyRefs[storeKey] -= 1;
-    if (this._keyRefs[storeKey] === 0) {
+    if (this._keyRefs[storeKey] === 0 && (this._appStore as AppStore)._recycleStrategy === RecycleStrategy.Urgent) {
       this._deleteOne(storeKey);
     }
   }

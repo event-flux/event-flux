@@ -1,5 +1,6 @@
 import StoreBase from '../StoreBase';
 import StoreMap from '../StoreMap';
+import RecycleStrategy from '../RecycleStrategy';
 
 jest.useFakeTimers();
 
@@ -68,7 +69,7 @@ describe('StoreMap', () => {
   });
 
   test("request store keys", async () => {
-    let dispatchParent = { setState: jest.fn() };
+    let dispatchParent = { setState: jest.fn(), _recycleStrategy: RecycleStrategy.Urgent };
     let storeMap = new StoreMap(dispatchParent);
     storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
 
@@ -86,6 +87,15 @@ describe('StoreMap', () => {
     expect(storeMap._keyRefs["key2"]).toEqual(0);
     expect(storeMap.has("key1")).toBeFalsy();
     expect(storeMap.has("key2")).toBeFalsy();
+
+    dispatchParent._recycleStrategy = RecycleStrategy.Never;
+    disposable1 = storeMap.request(["key1", "key2"]);
+    disposable1.dispose();
+    expect(storeMap._keyRefs["key1"]).toEqual(0);
+    expect(storeMap.has("key1")).toBeTruthy();
+
+    storeMap._disposeSubStores();
+    expect(storeMap.has("key1")).toBeFalsy();
   });
 
   test("add and delete store keys", () => {
