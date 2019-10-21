@@ -1,4 +1,4 @@
-import StoreBase, { reducer, invoker } from '../StoreBase';
+import StoreBase, { reducer, invoker, eventListener } from '../StoreBase';
 import AppStore from '../AppStore';
 
 jest.useFakeTimers();
@@ -67,6 +67,9 @@ describe('StoreBase', () => {
         this.setState({ "hello": "doRetAsync" });
         return "doRetAsync";
       }
+
+      @eventListener
+      onDidAddSome() {}
     }
     let appStore = { setState: jest.fn() };
     let store = new MyStore(appStore);
@@ -88,7 +91,7 @@ describe('StoreBase', () => {
     expect(await store.doRetAsync()).toBe("doRetAsync");
     expect(appStore.setState).toHaveBeenCalledWith({ my: { hello: "doRetAsync" } });
 
-    expect(store._evs).toEqual(["onDidUpdate", "onWillUpdate", "observe"]);
+    expect(store._evs).toEqual(["onDidUpdate", "onWillUpdate", "observe", "onDidAddSome"]);
     expect(store._invokers).toEqual(["doRetSync", "doRetAsync"])
   });
 
