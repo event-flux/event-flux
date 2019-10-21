@@ -5,7 +5,11 @@ import { StoreBaseConstructor, StoreMapDeclarer, StoreDeclarerOptions } from './
 
 const IS_STORE = '@@__FLUX_STORE__@@';
 
-export function eventListener(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+export function eventListener(target: StoreBase<any>, propertyKey: string, descriptor: PropertyDescriptor) {
+  if (!target._evs) {
+    target._evs = [];
+  }
+  target._evs.push(propertyKey);
   return target[propertyKey];
 }
 
@@ -23,8 +27,12 @@ export function reducer(target: StoreBase<any>, propertyKey: string, descriptor:
   }
 }
 
-export function returnReducer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+export function invoker(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   let originalMethod = descriptor.value;
+  if (!target._invokers) {
+    target._invokers = [];
+  }
+  target._invokers.push(propertyKey);
 
   descriptor.value = function(this: StoreBase<any>, ...args: any[]) {
     this._disableUpdate();

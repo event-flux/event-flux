@@ -1,5 +1,5 @@
 export { default as AppStore } from "./AppStore";
-export { default as StoreBase, eventListener, reducer, returnReducer } from "./StoreBase";
+export { default as StoreBase, eventListener, reducer, invoker } from "./StoreBase";
 export { default as StoreList } from "./StoreList";
 export { default as StoreMap, OperateMode, OperateModeSwitch } from "./StoreMap";
 export * from "./StoreDeclarer";

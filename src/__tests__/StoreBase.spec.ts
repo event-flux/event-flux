@@ -1,4 +1,4 @@
-import StoreBase, { reducer, returnReducer } from '../StoreBase';
+import StoreBase, { reducer, invoker } from '../StoreBase';
 import AppStore from '../AppStore';
 
 jest.useFakeTimers();
@@ -43,7 +43,7 @@ describe('StoreBase', () => {
     );
   });
 
-  test("should process reducer and returnReducer action", async () => {
+  test("should process reducer and invoker action", async () => {
     class MyStore extends StoreBase<any> {
       state = { hello: 0 };
 
@@ -57,12 +57,12 @@ describe('StoreBase', () => {
         this.setState({ hello: "doAsync" });
       }
 
-      @returnReducer
+      @invoker
       doRetSync() {
         return "doRetSync";
       }
 
-      @returnReducer
+      @invoker
       async doRetAsync() {
         this.setState({ "hello": "doRetAsync" });
         return "doRetAsync";
@@ -87,6 +87,9 @@ describe('StoreBase', () => {
     expect(store.doRetSync()).toBe("doRetSync");
     expect(await store.doRetAsync()).toBe("doRetAsync");
     expect(appStore.setState).toHaveBeenCalledWith({ my: { hello: "doRetAsync" } });
+
+    expect(store._evs).toEqual(["onDidUpdate", "onWillUpdate", "observe"]);
+    expect(store._invokers).toEqual(["doRetSync", "doRetAsync"])
   });
 
   test('onDidUpdate method', () => {
