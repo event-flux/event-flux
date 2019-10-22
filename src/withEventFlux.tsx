@@ -9,12 +9,15 @@ import { arraysEqual } from './arrayUtils';
 
 const { useContext, useEffect, useMemo, useRef } = React;
 
-export const FilterAll = (state: any) => state;
+export enum Filter {
+  FA = "FA",
+  EA = "EA",
+}
 
 export type StateFilter = (state: any) => any;
 
 export interface StoreObjValDef {
-  filter: string[] | StateFilter;
+  filter: string[] | StateFilter | Filter;
   mapKey?: string;
   mapFilter?: StoreMapKeyFilter;
   mapSpread?: StoreMapKeySpread;
@@ -39,7 +42,7 @@ export interface StoreDefItemWithKey {
   storeMapFilter?: StoreMapKeyFilter;
   storeMapSpread?: StoreMapKeySpread;
   storeMapKey?: string;
-  stateFilter: string[] | StateFilter;
+  stateFilter: string[] | StateFilter | Filter;
   stateKey?: string;
   as?: string;
 }
@@ -80,7 +83,7 @@ export function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): St
   return defList;
 }
 
-export function processState(state: any = {}, handler: string[] | StateFilter) {
+export function processState(state: any = {}, handler: string[] | StateFilter | Filter, stateKey: string) {
   if (Array.isArray(handler)) {
     let retState: any = {};
     for (let key of handler) {
@@ -88,8 +91,13 @@ export function processState(state: any = {}, handler: string[] | StateFilter) {
       retState[keys[keys.length - 1]] = keys.reduce((obj: any, k) => (obj == null ? obj : obj[k]), state);
     }
     return retState;
-  } else {
+  } else if (typeof handler === "function") {
     return handler(state);
+  } else {
+    switch (handler) {
+      case Filter.FA: return { [stateKey]: state };
+      case Filter.EA: return state;
+    }
   }
 }
 
@@ -97,7 +105,7 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
   let curHandler;
   if (storeDef.storeType === "Item") {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any = {}, stateFunc: string[] | StateFilter) => processState(curState, stateFunc)
+      (curState: any = {}, stateFunc: string[] | StateFilter | Filter, stateKey: string) => processState(curState, stateFunc, stateKey)
     );
   } else if (storeDef.storeMapFilter) {
     curHandler = (memoizeOne.default || memoizeOne)(
@@ -105,16 +113,16 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
         let filterState: { [key: string]: any } = {};
         let keys = storeMapFilter(props);
         for (let key of keys) {
-          filterState[key] = processState(curState[key], stateFunc); 
+          filterState[key] = processState(curState[key], stateFunc, stateKey); 
         }
         return { [stateKey]: filterState };
       }
     );
   } else if (storeDef.storeMapSpread) {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any = {}, stateFunc: string[] | StateFilter, storeMapSpread: StoreMapKeySpread, props: any) => {
+      (curState: any = {}, stateFunc: string[] | StateFilter, storeMapSpread: StoreMapKeySpread, stateKey: string, props: any) => {
         let key = storeMapSpread(props);
-        return processState(curState[key], stateFunc); 
+        return processState(curState[key], stateFunc, stateKey); 
       }
     );
   } else {
@@ -122,7 +130,7 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
       (curState: any = {}, stateFunc: string[] | StateFilter, stateKey: string) => {
         let filterState: { [key: string]: any } = {};
         for (let key in curState) {
-          filterState[key] = processState(curState[key], stateFunc); 
+          filterState[key] = processState(curState[key], stateFunc, stateKey); 
         }
         return { [stateKey]: filterState };
       }
@@ -133,11 +141,11 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
 
 export function handleFilterState(state: any, stateKey: string, storeDef: StoreDefItemWithKey, filterHandler: any, props: any) {
   if (storeDef.storeType === "Item") {
-    return filterHandler(state[stateKey], storeDef.stateFilter);
+    return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.stateKey);
   } else if (storeDef.storeMapFilter) {
     return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapFilter, storeDef.storeMapKey || storeDef.stateKey, props);
   } else if (storeDef.storeMapSpread) {
-    return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapSpread, props);
+    return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapSpread, storeDef.storeMapKey || storeDef.stateKey, props);
   } else {
     return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapKey || storeDef.stateKey);
   }

@@ -7,7 +7,7 @@ import { Provider } from '..';
 import withEventFlux, { 
   transformDefArgs, processState, StoreDefineObj, createStateHandler, 
   StoreDefItemWithKey, handleFilterState, 
-  useReqForStore, useReqForStoreMap, useReqForStoreMapSpread, useFilterState, genStoreAndState
+  useReqForStore, useReqForStoreMap, useReqForStoreMapSpread, useFilterState, genStoreAndState, Filter
 } from '../withEventFlux';
 import DispatchParent from '../DispatchParent';
 import RecycleStrategy from '../RecycleStrategy';
@@ -49,9 +49,11 @@ describe('withEventFlux', () => {
   });
 
   test("processState behave correctly", () => {
-    expect(processState({ a: 1, b: 2}, ["a", "b"])).toEqual({ a: 1, b: 2 });
-    expect(processState({ a: 1, b: 2}, (state: any) => ({ a: state.a }) )).toEqual({ a: 1 });
-    expect(processState({ a: 1, b: { c: 2 } }, ["a", "b.c"])).toEqual({ a: 1, c: 2 });
+    expect(processState({ a: 1, b: 2}, ["a", "b"], "hello")).toEqual({ a: 1, b: 2 });
+    expect(processState({ a: 1, b: 2}, (state: any) => ({ a: state.a }), "hello")).toEqual({ a: 1 });
+    expect(processState({ a: 1, b: { c: 2 } }, ["a", "b.c"], "hello")).toEqual({ a: 1, c: 2 });
+    expect(processState({ a: 1, b: { c: 2 } }, Filter.FA, "hello")).toEqual({ hello: { a: 1, b: { c: 2 } } });
+    expect(processState({ a: 1, b: { c: 2 } }, Filter.EA, "hello")).toEqual({ a: 1, b: { c: 2 } });
   });
 
   test("createStateHandler and handleFilterState should behave correctly", () => {
@@ -205,10 +207,12 @@ describe('withEventFlux', () => {
     });
 
     wrapper.setProps({ keys: ["key2" ]});
+    appStore.stores.todo3Store._disposeSubStores();
     expect(Array.from(appStore.stores.todo3Store.keys())).toEqual(["key2"]);
     expect(appStore.stores.todo3Store._keyRefs["key2"]).toEqual(1);
 
     wrapper.unmount();
+    appStore.stores.todo3Store._disposeSubStores();
     expect(Array.from(appStore.stores.todo3Store.keys())).toEqual([]);
   });
 
@@ -308,6 +312,7 @@ describe('withEventFlux', () => {
     wrapper.unmount();
     expect(appStore.stores.todo4Store.requestStore).toHaveBeenCalledTimes(3);
     expect(appStore.stores.todo4Store.releaseStore).toHaveBeenCalledTimes(3);
+    appStore.stores.todo4Store._disposeSubStores();
     expect(Array.from(appStore.stores.todo4Store.storeMap.keys())).toEqual([]);
   });
 
@@ -357,10 +362,11 @@ describe('withEventFlux', () => {
     wrapper.unmount();
     expect(appStore.stores.todo5Store.requestStore).toHaveBeenCalledTimes(2);
     expect(appStore.stores.todo5Store.releaseStore).toHaveBeenCalledTimes(2);
+    appStore.stores.todo5Store._disposeSubStores();
     expect(Array.from(appStore.stores.todo5Store.storeMap.keys())).toEqual([]);
   });
 
-  test.only("useFilterState should get the correct return state", () => {
+  test("useFilterState should get the correct return state", () => {
     let appStore = new AppStore();
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo4', storeKey: "todo4Store" }));
     appStore.registerStore(declareStoreMap(TodoStore, { stateKey: 'todo5', storeKey: "todo5Store" }));
