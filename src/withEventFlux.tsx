@@ -25,13 +25,13 @@ export interface StoreObjValDef {
 }
 
 export interface StoreDefineObj {
-  [storeKey: string]: string[] | StateFilter | StoreObjValDef; 
+  [storeKey: string]: string[] | StateFilter | StoreObjValDef | Filter; 
 }
 
 export type StoreMapKeyFilter = (props: any) => string[];
 export type StoreMapKeySpread = (props: any) => string;
 
-export type StoreDefineItem = string | [string] | [string, string[] | StateFilter | StoreObjValDef];
+export type StoreDefineItem = string | [string] | [string, string[] | StateFilter | StoreObjValDef | Filter];
 
 type StoreType = "Item" | "List" | "Map";
 
@@ -47,8 +47,8 @@ export interface StoreDefItemWithKey {
   as?: string;
 }
 
-function parseStoreValDef(storeKey: string, storeVal: string[] | StateFilter | StoreObjValDef): StoreDefItemWithKey {
-  if (Array.isArray(storeVal) || typeof storeVal === "function") {
+function parseStoreValDef(storeKey: string, storeVal: string[] | StateFilter | StoreObjValDef | Filter): StoreDefItemWithKey {
+  if (Array.isArray(storeVal) || typeof storeVal === "function" || typeof storeVal === "string") {
     return { 
       storeKey: storeKey, stateFilter: storeVal
     };
