@@ -13,13 +13,13 @@ gulp.task('clean', function () {
 
 gulp.task('pack:event-flux', function () {
   return gulp.src('./package.json')
-    .pipe(jeditor({ main: "./index.js"}))
+    .pipe(jeditor({ main: "./index.js", scripts: undefined }))
     .pipe(gulp.dest("./lib/event-flux"));
 });
 
 gulp.task('pack:react-event-flux', function () {
   return gulp.src('./package.json')
-    .pipe(jeditor({ name: 'react-event-flux', main: './react-event-flux.js' }))
+    .pipe(jeditor({ name: 'react-event-flux', main: './react-event-flux.js', scripts: undefined }))
     .pipe(gulp.dest("./lib/react-event-flux"));
 });
 

@@ -1,11 +1,11 @@
 {
   "name": "event-flux",
-  "version": "1.0.18",
+  "version": "1.2.0",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
     "test": "jest --detectLeaks --coverage && codecov",
-    "prepublish": "gulp"
+    "release": "gulp && cd ./lib/event-flux && npm publish && cd ../react-event-flux && npm publish"
   },
   "repository": {
     "type": "git",
