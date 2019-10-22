@@ -31,6 +31,7 @@
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
     "gulp": "^4.0.2",
+    "gulp-json-editor": "^2.5.3",
     "gulp-typescript": "^5.0.1",
     "jest": "^24.9.0",
     "jest-environment-enzyme": "^7.1.1",

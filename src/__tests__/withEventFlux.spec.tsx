@@ -3,8 +3,8 @@ import StoreBase from '../StoreBase';
 import { declareStore, declareStoreList, declareStoreMap } from '../StoreDeclarer';
 import * as React from 'react';
 import { mount, shallow } from 'enzyme';
-import { Provider } from '..';
-import withEventFlux, { 
+import Provider from '../Provider';
+import withEventFlux, {
   transformDefArgs, processState, StoreDefineObj, createStateHandler, 
   StoreDefItemWithKey, handleFilterState, 
   useReqForStore, useReqForStoreMap, useReqForStoreMapSpread, useFilterState, genStoreAndState, Filter
