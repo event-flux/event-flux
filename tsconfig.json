@@ -1,7 +1,4 @@
 {
-  "include": [
-    "src/**/*.ts", "src/**/*.tsx"
-  ],
   "compilerOptions": {
     "module": "commonjs",
     "strict": true,
@@ -14,6 +11,11 @@
     "lib": ["es2015", "dom"],
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "declaration": true
+    "declaration": true,
+    "baseUrl": "./",
+    "paths": {
+      "event-flux": ["./packages/event-flux/"],
+      "event-flux/*": ["./packages/material-ui/src/*"]
+    }
   }
 }

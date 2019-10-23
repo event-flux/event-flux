@@ -14,7 +14,11 @@ module.exports = {
     "json",
     "node"
   ],
-  "setupFilesAfterEnv": ["./src/setupTests.ts"],
+  "setupFilesAfterEnv": ["./setupTests.ts"],
   "coverageDirectory": "./coverage/",
   "collectCoverage": true,
+  moduleNameMapper: {
+    "^event-flux$": "<rootDir>/packages/event-flux/src/index.ts",
+  },
+  modulePathIgnorePatterns: ["packages/.*/lib"]
 }

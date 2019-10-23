@@ -1,6 +1,6 @@
 {
-  "name": "event-flux",
-  "version": "1.2.0",
+  "name": "event-flux-packages",
+  "version": "1.2.1",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
@@ -17,10 +17,6 @@
     "url": "https://github.com/event-flux/event-flux/issues"
   },
   "homepage": "https://github.com/event-flux/event-flux#readme",
-  "files": [
-    "src",
-    "lib"
-  ],
   "devDependencies": {
     "@types/enzyme": "^3.10.3",
     "@types/enzyme-adapter-react-16": "^1.0.5",
