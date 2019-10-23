@@ -26,4 +26,15 @@ describe('StoreDeclarer', () => {
     expect(storeDeclarer.depStoreNames).toEqual(["todo2", "todo3"]);
     expect(storeDeclarer.options).toEqual({ storeKey: "todoStore", stateKey: "todo", args: "hello" });
   });
+
+  test('should fill the storeKey and stateKey automatically', () => {
+    let storeDeclarer = declareStore(TodoStore, { storeKey: "helloStore" });
+    expect(storeDeclarer.options!.stateKey).toBe("hello");
+
+    storeDeclarer = declareStore(TodoStore, { storeKey: "hellostore" });
+    expect(storeDeclarer.options!.stateKey).toBe("hellostore");
+
+    storeDeclarer = declareStore(TodoStore, { stateKey: "hellostore" });
+    expect(storeDeclarer.options!.storeKey).toBe("hellostoreStore");
+  });
 });

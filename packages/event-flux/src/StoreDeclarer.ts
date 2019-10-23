@@ -15,7 +15,7 @@ const StoreReg = /(\w+)Store$/;
 function genDefaultStoreKey(StoreClass: StoreBaseConstructor<any>, options: IGenericOptions | undefined) {
   if (!options) options = {} as { stateKey?: string, storeKey: string };
   if (!options.stateKey) {
-    let storeName = StoreClass.name;
+    let storeName = options.storeKey || StoreClass.name;
     let regRes = StoreReg.exec(storeName);
     let stateKey = regRes ? regRes[1] : storeName;
     options.stateKey = stateKey[0].toLowerCase() + stateKey.slice(1);
