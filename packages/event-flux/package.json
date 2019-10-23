@@ -1,0 +1,27 @@
+{
+  "name": "event-flux",
+  "version": "1.2.1",
+  "description": "The flux framework for React",
+  "main": "./lib/index.js",
+  "scripts": {
+    "prebuild": "gulp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/event-flux/event-flux.git"
+  },
+  "author": "liuxiong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/event-flux/event-flux/issues"
+  },
+  "homepage": "https://github.com/event-flux/event-flux#readme",
+  "files": [
+    "src",
+    "lib"
+  ],
+  "dependencies": {
+    "event-kit": "^2.5.3",
+    "memoize-one": "^5.1.1"
+  }
+}
