@@ -14,7 +14,7 @@
     "declaration": true,
     "baseUrl": "./",
     "paths": {
-      "event-flux": ["./packages/event-flux/"],
+      "event-flux": ["./packages/event-flux/src/index.ts"],
       "event-flux/*": ["./packages/material-ui/src/*"]
     }
   }
