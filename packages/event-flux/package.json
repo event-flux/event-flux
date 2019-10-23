@@ -1,10 +1,10 @@
 {
   "name": "event-flux",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
-    "prebuild": "gulp"
+    "prepare": "gulp"
   },
   "repository": {
     "type": "git",

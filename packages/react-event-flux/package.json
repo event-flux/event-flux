@@ -1,11 +1,10 @@
 {
   "name": "react-event-flux",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
-    "tsc": "tsc --outDir lib",
-    "prebuild": "rimraf lib && npm run tsc"
+    "prepare": "gulp"
   },
   "repository": {
     "type": "git",
