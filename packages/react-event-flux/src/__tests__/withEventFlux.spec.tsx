@@ -454,4 +454,33 @@ describe('withEventFlux', () => {
       state1: "world",
     });
   });
+
+  test('with Class Component and ref', () => {
+    let appStore = new AppStore();
+    appStore.registerStore(declareStore(TodoStore, { stateKey: 'todo1', storeKey: "todo1Store" }));
+    appStore.init();
+    appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+
+    class MyView extends React.PureComponent<any> {
+      doAny() {}
+
+      render() {
+        return <div />;
+      }
+    }
+    const MyViewWrap = withEventFlux(["todo1Store", ["state1", "state2"]])(MyView);
+
+    function Fixture(props: any) {
+      return (
+        <Provider appStore={appStore}>
+          <MyViewWrap ref={props.innerRef}/>
+        </Provider>
+      );
+    }
+    
+    let viewRef: any;
+    let withRef = (ref: any) => viewRef = ref; 
+    const wrapper = mount(<Fixture innerRef={withRef}/>);
+    expect(viewRef.doAny).toBeTruthy();
+  });
 });
