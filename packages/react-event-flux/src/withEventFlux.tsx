@@ -1,14 +1,14 @@
-import * as React from 'react';
-import Provider, { EventFluxContext } from './Provider';
-import * as memoizeOne from 'memoize-one';
-import { DispatchItem, StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreMap, AppStore } from 'event-flux';
-import { arraysEqual } from './arrayUtils';
+import * as React from "react";
+import Provider, { EventFluxContext } from "./Provider";
+import * as memoizeOne from "memoize-one";
+import { DispatchItem, StoreDeclarer, StoreListDeclarer, StoreMapDeclarer, StoreMap, AppStore } from "event-flux";
+import { arraysEqual } from "./arrayUtils";
 
 const { useContext, useEffect, useMemo, useRef } = React;
 
 export enum Filter {
   FA = "FA",
-  EA = "EA",
+  EA = "EA"
 }
 
 export type StateFilter = (state: any) => any;
@@ -22,7 +22,7 @@ export interface StoreObjValDef {
 }
 
 export interface StoreDefineObj {
-  [storeKey: string]: string[] | StateFilter | StoreObjValDef | Filter; 
+  [storeKey: string]: string[] | StateFilter | StoreObjValDef | Filter;
 }
 
 export type StoreMapKeyFilter = (props: any) => string[];
@@ -44,16 +44,23 @@ export interface StoreDefItemWithKey {
   as?: string;
 }
 
-function parseStoreValDef(storeKey: string, storeVal: string[] | StateFilter | StoreObjValDef | Filter): StoreDefItemWithKey {
+function parseStoreValDef(
+  storeKey: string,
+  storeVal: string[] | StateFilter | StoreObjValDef | Filter
+): StoreDefItemWithKey {
   if (Array.isArray(storeVal) || typeof storeVal === "function" || typeof storeVal === "string") {
-    return { 
-      storeKey: storeKey, stateFilter: storeVal
+    return {
+      storeKey: storeKey,
+      stateFilter: storeVal
     };
   } else {
     return {
-      storeKey: storeKey, stateFilter: storeVal.filter, 
-      storeMapFilter: storeVal.mapFilter, storeMapSpread: storeVal.mapSpread, 
-      as: storeVal.as, storeMapKey: storeVal.mapKey,
+      storeKey: storeKey,
+      stateFilter: storeVal.filter,
+      storeMapFilter: storeVal.mapFilter,
+      storeMapSpread: storeVal.mapSpread,
+      as: storeVal.as,
+      storeMapKey: storeVal.mapKey
     };
   }
 }
@@ -62,7 +69,7 @@ export function transformDefArgs(args: StoreDefineObj[] | StoreDefineItem[]): St
   if (args.length >= 1 && typeof args[0] === "object" && !Array.isArray(args[0])) {
     let defObj = args[0] as StoreDefineObj;
     for (let storeKey in defObj) {
-      defList.push(parseStoreValDef(storeKey, defObj[storeKey])); 
+      defList.push(parseStoreValDef(storeKey, defObj[storeKey]));
     }
   } else {
     defList = (args as StoreDefineItem[]).map((defItem: StoreDefineItem) => {
@@ -92,8 +99,10 @@ export function processState(state: any = {}, handler: string[] | StateFilter | 
     return handler(state);
   } else {
     switch (handler) {
-      case Filter.FA: return { [stateKey]: state };
-      case Filter.EA: return state;
+      case Filter.FA:
+        return { [stateKey]: state };
+      case Filter.EA:
+        return state;
     }
   }
 }
@@ -102,24 +111,37 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
   let curHandler;
   if (storeDef.storeType === "Item") {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any = {}, stateFunc: string[] | StateFilter | Filter, stateKey: string) => processState(curState, stateFunc, stateKey)
+      (curState: any = {}, stateFunc: string[] | StateFilter | Filter, stateKey: string) =>
+        processState(curState, stateFunc, stateKey)
     );
   } else if (storeDef.storeMapFilter) {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any = {}, stateFunc: string[] | StateFilter, storeMapFilter: StoreMapKeyFilter, stateKey: string, props: any) => {
+      (
+        curState: any = {},
+        stateFunc: string[] | StateFilter,
+        storeMapFilter: StoreMapKeyFilter,
+        stateKey: string,
+        props: any
+      ) => {
         let filterState: { [key: string]: any } = {};
         let keys = storeMapFilter(props);
         for (let key of keys) {
-          filterState[key] = processState(curState[key], stateFunc, stateKey); 
+          filterState[key] = processState(curState[key], stateFunc, stateKey);
         }
         return { [stateKey]: filterState };
       }
     );
   } else if (storeDef.storeMapSpread) {
     curHandler = (memoizeOne.default || memoizeOne)(
-      (curState: any = {}, stateFunc: string[] | StateFilter, storeMapSpread: StoreMapKeySpread, stateKey: string, props: any) => {
+      (
+        curState: any = {},
+        stateFunc: string[] | StateFilter,
+        storeMapSpread: StoreMapKeySpread,
+        stateKey: string,
+        props: any
+      ) => {
         let key = storeMapSpread(props);
-        return processState(curState[key], stateFunc, stateKey); 
+        return processState(curState[key], stateFunc, stateKey);
       }
     );
   } else {
@@ -127,7 +149,7 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
       (curState: any = {}, stateFunc: string[] | StateFilter, stateKey: string) => {
         let filterState: { [key: string]: any } = {};
         for (let key in curState) {
-          filterState[key] = processState(curState[key], stateFunc, stateKey); 
+          filterState[key] = processState(curState[key], stateFunc, stateKey);
         }
         return { [stateKey]: filterState };
       }
@@ -136,28 +158,59 @@ export function createStateHandler(storeDef: StoreDefItemWithKey) {
   return curHandler;
 }
 
-export function handleFilterState(state: any, stateKey: string, storeDef: StoreDefItemWithKey, filterHandler: any, props: any) {
+export function handleFilterState(
+  state: any,
+  stateKey: string,
+  storeDef: StoreDefItemWithKey,
+  filterHandler: any,
+  props: any
+) {
   if (storeDef.storeType === "Item") {
     return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.stateKey);
   } else if (storeDef.storeMapFilter) {
-    return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapFilter, storeDef.storeMapKey || storeDef.stateKey, props);
+    return filterHandler(
+      state[stateKey],
+      storeDef.stateFilter,
+      storeDef.storeMapFilter,
+      storeDef.storeMapKey || storeDef.stateKey,
+      props
+    );
   } else if (storeDef.storeMapSpread) {
-    return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapSpread, storeDef.storeMapKey || storeDef.stateKey, props);
+    return filterHandler(
+      state[stateKey],
+      storeDef.stateFilter,
+      storeDef.storeMapSpread,
+      storeDef.storeMapKey || storeDef.stateKey,
+      props
+    );
   } else {
     return filterHandler(state[stateKey], storeDef.stateFilter, storeDef.storeMapKey || storeDef.stateKey);
   }
 }
 
 type ReqStores = { [storeKey: string]: DispatchItem };
-type ReqStoreMaps = { [storeKey: string]: { store: DispatchItem, storeMapFilter: StoreMapKeyFilter } };
-type ReqStoreMapSpreads = { [storeKey: string]: { store: DispatchItem, storeMapSpread: StoreMapKeySpread } };
+type ReqStoreMaps = {
+  [storeKey: string]: {
+    store: DispatchItem;
+    storeMapFilter: StoreMapKeyFilter;
+  };
+};
+type ReqStoreMapSpreads = {
+  [storeKey: string]: {
+    store: DispatchItem;
+    storeMapSpread: StoreMapKeySpread;
+  };
+};
 
 function getStoreKey(storeDef: StoreDefItemWithKey, storeKey: string) {
   storeKey = storeDef.as || storeKey;
   return storeDef.storeMapSpread ? "_" + storeKey : storeKey;
 }
 
-export function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined): [ReqStores, ReqStoreMaps, ReqStoreMapSpreads] {
+export function useReqForStore(
+  defList: StoreDefItemWithKey[],
+  _appStore: AppStore | undefined
+): [ReqStores, ReqStoreMaps, ReqStoreMapSpreads] {
   let retStores = useMemo(() => {
     let reqStores: ReqStores = {};
     let reqStoreMaps: ReqStoreMaps = {};
@@ -165,7 +218,7 @@ export function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppSto
 
     for (let storeDef of defList) {
       let storeKey = storeDef.storeKey;
-      let store = reqStores[getStoreKey(storeDef, storeKey)] = _appStore!.requestStore(storeKey);
+      let store = (reqStores[getStoreKey(storeDef, storeKey)] = _appStore!.requestStore(storeKey));
       let storeDeclarer = _appStore!._storeRegisterMap[storeKey];
 
       if (StoreDeclarer.isStore(storeDeclarer)) {
@@ -175,9 +228,15 @@ export function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppSto
       } else if (StoreMapDeclarer.isStoreMap(storeDeclarer)) {
         storeDef.storeType = "Map";
         if (storeDef.storeMapFilter) {
-          reqStoreMaps[storeKey] = { store, storeMapFilter: storeDef.storeMapFilter };
+          reqStoreMaps[storeKey] = {
+            store,
+            storeMapFilter: storeDef.storeMapFilter
+          };
         } else if (storeDef.storeMapSpread) {
-          reqStoreMapSpreads[storeDef.as || storeDef.storeKey] = { store, storeMapSpread: storeDef.storeMapSpread };
+          reqStoreMapSpreads[storeDef.as || storeDef.storeKey] = {
+            store,
+            storeMapSpread: storeDef.storeMapSpread
+          };
         }
       }
       storeDef.stateKey = store._stateKey!;
@@ -185,13 +244,13 @@ export function useReqForStore(defList: StoreDefItemWithKey[], _appStore: AppSto
     return [reqStores, reqStoreMaps, reqStoreMapSpreads] as [ReqStores, ReqStoreMaps, ReqStoreMapSpreads];
   }, []);
 
-  useEffect(() =>  {
+  useEffect(() => {
     return () => {
       for (let storeDef of defList) {
         let storeKey = storeDef.storeKey;
         _appStore!.releaseStore(storeKey);
       }
-    }
+    };
   }, []);
   return retStores;
 }
@@ -223,7 +282,7 @@ export function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
 
     filterKeyRef[storeKey] = filterKeys;
   }
-  
+
   useEffect(() => {
     storeMapRef.current = filterKeyRef;
   }, [filterKeyRef]);
@@ -239,7 +298,7 @@ export function useReqForStoreMap(reqStoreMaps: ReqStoreMaps, props: any) {
           }
         }
       }
-    }
+    };
   }, []);
   return isStoreChanged;
 }
@@ -265,7 +324,7 @@ export function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props:
         (store as StoreMap<any>).releaseStore(prevKey);
       }
     }
-    
+
     filterKeyRef[storeKey] = filterKey;
   }
 
@@ -282,12 +341,18 @@ export function useReqForStoreMapSpread(reqStoreMaps: ReqStoreMapSpreads, props:
           (store as StoreMap<any>).releaseStore(prevKey);
         }
       }
-    }
+    };
   }, []);
   return isStoreChanged;
 }
 
-export function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppStore | undefined, state: any, props: any, isStoreChange: boolean) {
+export function useFilterState(
+  defList: StoreDefItemWithKey[],
+  _appStore: AppStore | undefined,
+  state: any,
+  props: any,
+  isStoreChange: boolean
+) {
   let stateRefs = useRef<any>([]);
 
   let newState;
@@ -300,9 +365,15 @@ export function useFilterState(defList: StoreDefItemWithKey[], _appStore: AppSto
       isFirstReq = true;
       let thisState = handleFilterState(_appStore!.state, stateKey, storeDef, curHandler, props);
       newState = newState == null ? thisState : Object.assign(newState, thisState);
-    }  
+    }
     // When we first create the store or the store has changed, we get the state from the appStore
-    let thisState = handleFilterState(isFirstReq || isStoreChange ? _appStore!.state : state, stateKey, storeDef, curHandler, props);
+    let thisState = handleFilterState(
+      isFirstReq || isStoreChange ? _appStore!.state : state,
+      stateKey,
+      storeDef,
+      curHandler,
+      props
+    );
     newState = newState == null ? thisState : Object.assign(newState, thisState);
   }
   return newState;
@@ -314,7 +385,7 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[], pro
   let defList: StoreDefItemWithKey[] = useMemo(() => transformDefArgs(args), []);
 
   let [retStores, reqStoreMaps, reqStoreMapSpreads] = useReqForStore(defList, _appStore);
-  
+
   let isStoreChange = useReqForStoreMap(reqStoreMaps, props);
   let isSpreadChange = useReqForStoreMapSpread(reqStoreMapSpreads, props, retStores);
 
@@ -324,14 +395,12 @@ export function genStoreAndState(args: StoreDefineObj[] | StoreDefineItem[], pro
 }
 
 export default function withEventFlux(...args: StoreDefineObj[] | StoreDefineItem[]) {
-  
   return function(Component: React.ComponentType) {
-
-    return React.memo(React.forwardRef(function(props: any, ref) {
-      let [retStores, newState] = genStoreAndState(args, props);
-      return (
-        <Component {...props} {...retStores} {...newState} ref={ref}/>
-      );
-    }));
-  }
+    return React.memo(
+      React.forwardRef(function(props: any, ref) {
+        let [retStores, newState] = genStoreAndState(args, props);
+        return <Component {...props} {...retStores} {...newState} ref={ref} />;
+      })
+    );
+  };
 }

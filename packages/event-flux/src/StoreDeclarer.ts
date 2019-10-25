@@ -5,7 +5,7 @@ import DispatchParent from "./DispatchParent";
 import StoreMap from "./StoreMap";
 
 export interface IGenericOptions {
-  stateKey?: string; 
+  stateKey?: string;
   storeKey?: string;
   lifetime?: "static" | "dynamic";
   [key: string]: any;
@@ -13,7 +13,7 @@ export interface IGenericOptions {
 
 const StoreReg = /(\w+)Store$/;
 function genDefaultStoreKey(StoreClass: StoreBaseConstructor<any>, options: IGenericOptions | undefined) {
-  if (!options) options = {} as { stateKey?: string, storeKey: string };
+  if (!options) options = {} as { stateKey?: string; storeKey: string };
   if (!options.stateKey) {
     let storeName = options.storeKey || StoreClass.name;
     let regRes = StoreReg.exec(storeName);
@@ -26,7 +26,11 @@ function genDefaultStoreKey(StoreClass: StoreBaseConstructor<any>, options: IGen
   return options;
 }
 
-function parseOptions<OptionT extends IGenericOptions>(Store: any, depStoreNames?: string[] | IGenericOptions, options?: OptionT): [string[], OptionT] {
+function parseOptions<OptionT extends IGenericOptions>(
+  Store: any,
+  depStoreNames?: string[] | IGenericOptions,
+  options?: OptionT
+): [string[], OptionT] {
   if (Array.isArray(depStoreNames)) {
     options = genDefaultStoreKey(Store, options) as OptionT;
   } else {
@@ -55,19 +59,23 @@ export interface StoreDeclarerOptions extends IGenericOptions {
   [key: string]: any;
 }
 
-const IS_STORE = '@@__STORE_ITEM__@@';
+const IS_STORE = "@@__STORE_ITEM__@@";
 export class StoreDeclarer<T> {
   Store: StoreBaseConstructor<T>;
   depStoreNames: string[] | undefined;
   options: StoreDeclarerOptions | undefined;
 
-  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreDeclarerOptions, options?: StoreDeclarerOptions) {
+  constructor(
+    Store: StoreBaseConstructor<T>,
+    depStoreNames?: string[] | StoreDeclarerOptions,
+    options?: StoreDeclarerOptions
+  ) {
     this.Store = Store;
     let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
     this.depStoreNames = names;
     this.options = storeOptions;
   }
-  
+
   create(appStore: AppStore): StoreBase<T> {
     return new this.Store(appStore);
   }
@@ -79,7 +87,11 @@ export class StoreDeclarer<T> {
   }
 }
 
-export function declareStore<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreDeclarerOptions, options?: StoreDeclarerOptions) {
+export function declareStore<T>(
+  Store: StoreBaseConstructor<T>,
+  depStoreNames?: string[] | StoreDeclarerOptions,
+  options?: StoreDeclarerOptions
+) {
   return new StoreDeclarer(Store, depStoreNames, options);
 }
 
@@ -91,14 +103,18 @@ export interface StoreListDeclarerOptions extends IGenericOptions {
   StoreList?: StoreListConstructor<any>;
   [key: string]: any;
 }
-const IS_STORE_LIST = '@@__STORE_LIST__@@';
+const IS_STORE_LIST = "@@__STORE_LIST__@@";
 
 export class StoreListDeclarer<T> {
   Store: StoreBaseConstructor<T>;
   depStoreNames: string[] | undefined;
   options: StoreListDeclarerOptions | undefined;
 
-  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreListDeclarerOptions, options?: StoreListDeclarerOptions) {
+  constructor(
+    Store: StoreBaseConstructor<T>,
+    depStoreNames?: string[] | StoreListDeclarerOptions,
+    options?: StoreListDeclarerOptions
+  ) {
     this.Store = Store;
     let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
     this.depStoreNames = names;
@@ -117,7 +133,11 @@ export class StoreListDeclarer<T> {
   }
 }
 
-export function declareStoreList<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreListDeclarerOptions, options?: StoreListDeclarerOptions) {
+export function declareStoreList<T>(
+  Store: StoreBaseConstructor<T>,
+  depStoreNames?: string[] | StoreListDeclarerOptions,
+  options?: StoreListDeclarerOptions
+) {
   return new StoreListDeclarer(Store, depStoreNames, options);
 }
 
@@ -130,18 +150,22 @@ export interface StoreMapDeclarerOptions extends IGenericOptions {
   StoreMap?: StoreMapConstructor<any>;
   [key: string]: any;
 }
-const IS_STORE_MAP = '@@__STORE_MAP__@@';
+const IS_STORE_MAP = "@@__STORE_MAP__@@";
 
 export class StoreMapDeclarer<T> {
   Store: StoreBaseConstructor<T>;
   depStoreNames: string[] | undefined;
   options: StoreMapDeclarerOptions | undefined;
 
-  constructor(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreMapDeclarerOptions, options?: StoreMapDeclarerOptions) {
+  constructor(
+    Store: StoreBaseConstructor<T>,
+    depStoreNames?: string[] | StoreMapDeclarerOptions,
+    options?: StoreMapDeclarerOptions
+  ) {
     this.Store = Store;
     let [names, storeOptions] = parseOptions(Store, depStoreNames, options);
     this.depStoreNames = names;
-    this.options = storeOptions;;
+    this.options = storeOptions;
   }
 
   create(appStore: AppStore): StoreMap<T> {
@@ -150,13 +174,17 @@ export class StoreMapDeclarer<T> {
   }
 
   [IS_STORE_MAP] = true;
- 
+
   static isStoreMap(maybeMap: any) {
     return !!(maybeMap && maybeMap[IS_STORE_MAP]);
   }
 }
 
-export function declareStoreMap<T>(Store: StoreBaseConstructor<T>, depStoreNames?: string[] | StoreMapDeclarerOptions, options?: StoreMapDeclarerOptions) {
+export function declareStoreMap<T>(
+  Store: StoreBaseConstructor<T>,
+  depStoreNames?: string[] | StoreMapDeclarerOptions,
+  options?: StoreMapDeclarerOptions
+) {
   return new StoreMapDeclarer(Store, depStoreNames, options);
 }
 

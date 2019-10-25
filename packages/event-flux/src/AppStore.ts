@@ -1,10 +1,10 @@
-import BatchUpdateHost from './BatchUpdateHost';
-import { StoreBaseConstructor, AnyStoreDeclarer } from './StoreDeclarer';
+import BatchUpdateHost from "./BatchUpdateHost";
+import { StoreBaseConstructor, AnyStoreDeclarer } from "./StoreDeclarer";
 import RecycleStrategy from "./RecycleStrategy";
 import searchCycleCollection from "./searchCycleCollection";
-import DispatchItem from './DispatchItem';
-import DispatchParent from './DispatchParent';
-const IS_APP_STORE = '@@__APP_STORE__@@';
+import DispatchItem from "./DispatchItem";
+import DispatchParent from "./DispatchParent";
+const IS_APP_STORE = "@@__APP_STORE__@@";
 
 export default class AppStore implements DispatchParent {
   _isInit = false;
@@ -26,9 +26,9 @@ export default class AppStore implements DispatchParent {
 
   // Check any object is AppStore object or not.
   static isAppStore: Function;
-  
+
   constructor(storeDeclarers?: AnyStoreDeclarer[] | { [key: string]: any }, initStates?: any) {
-    this.batchUpdater = new BatchUpdateHost(this);  
+    this.batchUpdater = new BatchUpdateHost(this);
     if (Array.isArray(storeDeclarers)) {
       this.registerStore(...storeDeclarers);
     } else {
@@ -45,7 +45,8 @@ export default class AppStore implements DispatchParent {
   // }
 
   setState(state: any) {
-    if (!this._isInit) {  // 未初始化完成
+    if (!this._isInit) {
+      // The AppStore has not initialilized
       Object.assign(this.state, state);
     } else {
       this.state = Object.assign({}, this.state, state);
@@ -63,12 +64,11 @@ export default class AppStore implements DispatchParent {
     this._sendUpdate();
   }
 
-  handleWillChange(prevState: any, state: any) {
-  }
-  
+  handleWillChange(prevState: any, state: any) {}
+
   onDidChange(callback: Function) {
     this.didChangeCallbacks.push(callback);
-    return { 
+    return {
       dispose: () => {
         let index = this.didChangeCallbacks.indexOf(callback);
         if (index !== -1) {
@@ -87,7 +87,7 @@ export default class AppStore implements DispatchParent {
         allDepList = allDepList.concat(depList);
         // For preload stores, it need not add reference count.
         if (lifetime === "dynamic") {
-          this.stores[this._getStoreKey(storeKey)]._decreaseRef(); 
+          this.stores[this._getStoreKey(storeKey)]._decreaseRef();
         }
       }
     }
@@ -164,14 +164,13 @@ export default class AppStore implements DispatchParent {
   /**
    * Request the appStore to create store by the storeKey if this store has exists and add reference to 1
    * Request the appStore to add reference count if this store has exists.
-   * @param storeKey 
+   * @param storeKey
    */
   requestStore(storeKey: string, storeOpts?: any): DispatchItem {
     let finalStoreKey = this._getStoreKey(storeKey, storeOpts);
 
     let store = this.stores[finalStoreKey];
     if (!store) {
-      
       let depList = this._createStoreAndInject(storeKey, storeOpts);
       // Invoke the depList's willInit, the dependency store's willInit will be invoked first
       // for (let i = depList.length - 1; i >= 0; i -= 1) {
@@ -193,7 +192,7 @@ export default class AppStore implements DispatchParent {
 
   /**
    * Release the store reference count with name of storeKey, if the reference count decrease to 0, then the store destroy.
-   * @param storeKey 
+   * @param storeKey
    */
   releaseStore(storeKey: string, storeOpts?: any) {
     let finalStoreKey = this._getStoreKey(storeKey, storeOpts);
@@ -221,7 +220,7 @@ export default class AppStore implements DispatchParent {
       // If all of the cycle collections cannot find the ref count > 1, then we can dispose all of the dependency stores
       // breadth-first search all the dependency store and derease the reference count, If this store's count decrease to 0, dispose it.
       if (this._recycleStrategy === RecycleStrategy.Urgent) {
-        this._disposeStoreAndDeps(storeKey, store, storeOpts);        
+        this._disposeStoreAndDeps(storeKey, store, storeOpts);
       }
     } else {
       store._decreaseRef();
@@ -260,10 +259,10 @@ export default class AppStore implements DispatchParent {
           filterDepNames.push(depName);
         }
       }
-  
+
       depList.splice(depList.length, 0, ...filterDepNames);
     }
-    
+
     // Create all the dependency stores and add the reference count
     for (let i = depList.length - 1; i >= 0; i -= 1) {
       let storeKey = depList[i];
@@ -284,14 +283,22 @@ export default class AppStore implements DispatchParent {
         depStores[depName] = this.stores[this._getStoreKey(depName, storeOpts)];
       }
       let { stateKey } = storeInfo.options!;
-      let initState = this.__initStates__ ? stateKey ? this.__initStates__[stateKey] : this.__initStates__ : undefined;
+      let initState = this.__initStates__
+        ? stateKey
+          ? this.__initStates__[stateKey]
+          : this.__initStates__
+        : undefined;
       this.stores[this._getStoreKey(storeKey, storeOpts)]._inject(
-        storeInfo.Store, this._getStateKey(storeKey, stateKey!, storeOpts), depStores, initState, storeInfo.options
+        storeInfo.Store,
+        this._getStateKey(storeKey, stateKey!, storeOpts),
+        depStores,
+        initState,
+        storeInfo.options
       );
     }
     return depList;
   }
- 
+
   _disposeStoreAndDeps(storeKey: string, store: DispatchItem, storeOpts?: any) {
     if (store.getRefCount() > 0) return;
     store.dispose();
@@ -303,7 +310,7 @@ export default class AppStore implements DispatchParent {
       let curStoreKey = depList[i];
 
       let storeInfo = this._storeRegisterMap[curStoreKey];
-      
+
       let depNames = storeInfo.depStoreNames || [];
 
       let filterDepNames = [];
@@ -324,11 +331,11 @@ export default class AppStore implements DispatchParent {
           }
         }
       }
-  
+
       depList.splice(depList.length, 0, ...filterDepNames);
     }
   }
- 
+
   // calculate the storeKey by the origin storeKey and storeOpts
   _getStoreKey(storeKey: string, storeOpts?: any) {
     return storeKey;
@@ -356,4 +363,4 @@ export default class AppStore implements DispatchParent {
 (AppStore.prototype as any)[IS_APP_STORE] = true;
 AppStore.isAppStore = function(maybeAppStore: any) {
   return !!(maybeAppStore && maybeAppStore[IS_APP_STORE]);
-}
+};

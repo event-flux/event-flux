@@ -1,6 +1,6 @@
 enum RecycleStrategy {
   Urgent,
-  Never,
+  Never
 }
 
 export default RecycleStrategy;

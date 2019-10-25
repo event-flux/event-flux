@@ -1,9 +1,9 @@
-import { Emitter, Disposable, CompositeDisposable, DisposableLike } from 'event-kit';
-import DispatchParent from './DispatchParent';
-import DispatchItem from './DispatchItem';
-import { StoreBaseConstructor, StoreMapDeclarer, StoreDeclarerOptions } from './StoreDeclarer';
+import { Emitter, Disposable, CompositeDisposable, DisposableLike } from "event-kit";
+import DispatchParent from "./DispatchParent";
+import DispatchItem from "./DispatchItem";
+import { StoreBaseConstructor, StoreMapDeclarer, StoreDeclarerOptions } from "./StoreDeclarer";
 
-const IS_STORE = '@@__FLUX_STORE__@@';
+const IS_STORE = "@@__FLUX_STORE__@@";
 
 export function eventListener(target: StoreBase<any>, propertyKey: string, descriptor: PropertyDescriptor) {
   if (!target._evs) {
@@ -24,7 +24,7 @@ export function reducer(target: StoreBase<any>, propertyKey: string, descriptor:
     } else {
       this._enableUpdate();
     }
-  }
+  };
 }
 
 export function invoker(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -36,14 +36,14 @@ export function invoker(target: any, propertyKey: string, descriptor: PropertyDe
 
   descriptor.value = function(this: StoreBase<any>, ...args: any[]) {
     this._disableUpdate();
-    let retVal = originalMethod.apply(this, args);    
+    let retVal = originalMethod.apply(this, args);
     if (retVal && retVal.finally) {
       return retVal.finally(this._enableUpdate);
     } else {
       this._enableUpdate();
       return retVal;
     }
-  }
+  };
 }
 
 export default class StoreBase<StateT> implements DispatchItem {
@@ -65,7 +65,7 @@ export default class StoreBase<StateT> implements DispatchItem {
 
   mapKey?: string;
   listIndex?: number;
-  
+
   [storeKey: string]: any;
 
   static isStore: (store: any) => boolean;
@@ -80,10 +80,10 @@ export default class StoreBase<StateT> implements DispatchItem {
    * @param depStores: the store's dependencies, the dependency stores will be injected to this store
    */
   _inject(
-    StoreBuilder: StoreBaseConstructor<any>, 
-    stateKey?: string, 
-    depStores?: { [storeKey: string]: DispatchItem }, 
-    initState?: any, 
+    StoreBuilder: StoreBaseConstructor<any>,
+    stateKey?: string,
+    depStores?: { [storeKey: string]: DispatchItem },
+    initState?: any,
     options?: StoreDeclarerOptions
   ) {
     this._stateKey = stateKey;
@@ -97,9 +97,9 @@ export default class StoreBase<StateT> implements DispatchItem {
     // Observe this store's state and send the state to appStore
     if (initState) {
       this.state = initState;
-      this.addDisposable(this.onDidUpdate(this._handleUpdate));  
+      this.addDisposable(this.onDidUpdate(this._handleUpdate));
     } else {
-      this.addDisposable(this.observe(this._handleUpdate));  
+      this.addDisposable(this.observe(this._handleUpdate));
     }
   }
 
@@ -134,15 +134,15 @@ export default class StoreBase<StateT> implements DispatchItem {
     this.__enableUpdate = true;
     if (this._hasUpdate) {
       this._hasUpdate = false;
-      this._emitter.emit('did-update', this.state);
+      this._emitter.emit("did-update", this.state);
     }
-  }
+  };
 
   getArgs() {
-    return this._args; 
+    return this._args;
   }
 
-  // Create new store from storeClass. storeClass must be factory or class.  
+  // Create new store from storeClass. storeClass must be factory or class.
   // buildStore(storeClass, args, options) {
   //   if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
   //   return buildStore(this._appStore, storeClass, args, options);
@@ -155,14 +155,12 @@ export default class StoreBase<StateT> implements DispatchItem {
       return;
     }
     // Make the update delay to next tick that can collect many update into one operation.
-    let nextState = Object.assign({}, this.state, state); 
-    this._inWillUpdate = true;   
-    this._emitter.emit('will-update', nextState);
+    let nextState = Object.assign({}, this.state, state);
+    this._inWillUpdate = true;
+    this._emitter.emit("will-update", nextState);
     this._inWillUpdate = false;
     if (this._willUpdateStates.length > 0) {
-      this.state = this._willUpdateStates.reduce((allState, state) => 
-        Object.assign(allState, state
-      ), nextState);
+      this.state = this._willUpdateStates.reduce((allState, state) => Object.assign(allState, state), nextState);
       this._willUpdateStates = [];
     } else {
       this.state = nextState;
@@ -170,7 +168,7 @@ export default class StoreBase<StateT> implements DispatchItem {
 
     // Send update notification.
     if (this.__enableUpdate) {
-      this._emitter.emit('did-update', this.state);
+      this._emitter.emit("did-update", this.state);
     } else {
       this._hasUpdate = true;
     }
@@ -178,18 +176,18 @@ export default class StoreBase<StateT> implements DispatchItem {
 
   @eventListener
   onDidUpdate(callback: (value: StateT) => void): Disposable {
-    return this._emitter.on('did-update', callback);
+    return this._emitter.on("did-update", callback);
   }
 
   @eventListener
   onWillUpdate(callback: (value: StateT) => void) {
-    return this._emitter.on('will-update', callback);    
+    return this._emitter.on("will-update", callback);
   }
 
   @eventListener
   observe(callback: (value: StateT) => void) {
     callback(this.state);
-    return this._emitter.on('did-update', callback);    
+    return this._emitter.on("did-update", callback);
   }
 
   addDisposable(item: DisposableLike) {
@@ -224,4 +222,4 @@ export default class StoreBase<StateT> implements DispatchItem {
 (StoreBase.prototype as any)[IS_STORE] = true;
 StoreBase.isStore = function(maybeStore: any) {
   return !!(maybeStore && maybeStore[IS_STORE]);
-}
+};

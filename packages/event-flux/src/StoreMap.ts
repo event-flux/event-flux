@@ -1,13 +1,13 @@
-import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from './StoreDeclarer';
-import DispatchItem from './DispatchItem';
-import DispatchParent from './DispatchParent';
-import { DisposableLike, CompositeDisposable } from 'event-kit';
-import { RecycleStrategy, AppStore } from '.';
+import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from "./StoreDeclarer";
+import DispatchItem from "./DispatchItem";
+import DispatchParent from "./DispatchParent";
+import { DisposableLike, CompositeDisposable } from "event-kit";
+import { RecycleStrategy, AppStore } from ".";
 
 export enum OperateMode {
   None,
   Direct,
-  RefCount,
+  RefCount
 }
 
 export class OperateModeSwitch {
@@ -18,14 +18,16 @@ export class OperateModeSwitch {
       throw new Error(`
         You request store that use direct mode, so requesting store by "request" method is not allowed. 
         Try to remove all the "add" invocation and "keys" declarer options.
-      `)
+      `);
     }
     this.operateMode = OperateMode.RefCount;
   }
 
   enterDirectMode() {
     if (this.operateMode === OperateMode.RefCount) {
-      throw new Error(`You request store that use reference count, so requesting store by "add" and "delete" is not allowed.`)
+      throw new Error(
+        `You request store that use reference count, so requesting store by "add" and "delete" is not allowed.`
+      );
     }
     this.operateMode = OperateMode.Direct;
   }
@@ -62,8 +64,14 @@ export default class StoreMap<T> {
   }
 
   init() {}
-  
-  _inject(StoreBuilder: StoreBaseConstructor<T>, stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, options?: StoreMapDeclarerOptions) {
+
+  _inject(
+    StoreBuilder: StoreBaseConstructor<T>,
+    stateKey?: string,
+    depStores?: { [storeKey: string]: DispatchItem },
+    initState?: any,
+    options?: StoreMapDeclarerOptions
+  ) {
     this._stateKey = stateKey;
     if (!stateKey) console.error("StoreList can not let stateKey to null");
 
@@ -193,19 +201,29 @@ export default class StoreMap<T> {
     }
   }
 
-  forEach(callback: (value: any, key: string, map: Map<string, any>) => void) { 
-    return this.storeMap.forEach(callback); 
+  forEach(callback: (value: any, key: string, map: Map<string, any>) => void) {
+    return this.storeMap.forEach(callback);
   }
 
-  get(key: string) { return this.storeMap.get(key); }
+  get(key: string) {
+    return this.storeMap.get(key);
+  }
 
-  has(key: string) { return this.storeMap.has(key); }
+  has(key: string) {
+    return this.storeMap.has(key);
+  }
 
-  keys() { return this.storeMap.keys(); }
+  keys() {
+    return this.storeMap.keys();
+  }
 
-  values() { return this.storeMap.values(); }
+  values() {
+    return this.storeMap.values();
+  }
 
-  entries() { return this.storeMap.entries(); }
+  entries() {
+    return this.storeMap.entries();
+  }
 
   _addRef() {
     this._refCount += 1;

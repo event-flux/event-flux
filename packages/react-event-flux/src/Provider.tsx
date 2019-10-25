@@ -1,18 +1,22 @@
-import * as React from 'react';
-import { DisposableLike } from 'event-kit';
-import { AppStore, DispatchItem } from 'event-flux';
+import * as React from "react";
+import { DisposableLike } from "event-kit";
+import { AppStore, DispatchItem } from "event-flux";
 
 interface ContextValue {
   _appStore: AppStore | undefined;
   stores: { [storeKey: string]: DispatchItem };
-  state: any; 
+  state: any;
 }
 
 interface ProviderProps {
   appStore: AppStore;
 }
 
-export const EventFluxContext = React.createContext<ContextValue>({ _appStore: undefined, stores: {}, state: {} });
+export const EventFluxContext = React.createContext<ContextValue>({
+  _appStore: undefined,
+  stores: {},
+  state: {}
+});
 const ContextProvider = EventFluxContext.Provider;
 
 export default class Provider extends React.PureComponent<ProviderProps, ContextValue> {
@@ -22,13 +26,13 @@ export default class Provider extends React.PureComponent<ProviderProps, Context
     super(props);
     const appStore = props.appStore;
     this.disposable = appStore.onDidChange(this.handleStateChange);
-    this.state = { 
-      _appStore: appStore, 
-      stores: appStore.stores, 
-      state: appStore.state, 
+    this.state = {
+      _appStore: appStore,
+      stores: appStore.stores,
+      state: appStore.state
     };
   }
-  
+
   handleStateChange = (state: any) => {
     this.setState({ state });
   };
@@ -38,10 +42,6 @@ export default class Provider extends React.PureComponent<ProviderProps, Context
   }
 
   render() {
-    return (
-      <ContextProvider value={this.state}>
-        {this.props.children}
-      </ContextProvider>
-    );
+    return <ContextProvider value={this.state}>{this.props.children}</ContextProvider>;
   }
 }

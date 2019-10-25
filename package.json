@@ -4,6 +4,7 @@
   "description": "The flux framework for React",
   "main": "./lib/index.js",
   "scripts": {
+    "prettier": "prettier --write packages/*/src/**/*.*",
     "test": "jest --detectLeaks --coverage && codecov",
     "release": "gulp && cd ./lib/event-flux && npm publish && cd ../react-event-flux && npm publish"
   },
@@ -21,6 +22,9 @@
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
+  },
+  "prettier": {
+    "printWidth": 120
   },
   "devDependencies": {
     "@types/enzyme": "^3.10.3",

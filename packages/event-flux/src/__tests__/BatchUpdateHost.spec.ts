@@ -1,20 +1,20 @@
-import BatchUpdateHost from '../BatchUpdateHost';
+import BatchUpdateHost from "../BatchUpdateHost";
 
 jest.useFakeTimers();
 
-test('Batch', () => {
-  let sendUpdateFn = jest.fn(); 
+test("Batch", () => {
+  let sendUpdateFn = jest.fn();
   let appStore = {
-    _sendUpdate: sendUpdateFn,
+    _sendUpdate: sendUpdateFn
   };
 
   let batchUpdater = new BatchUpdateHost(appStore);
   batchUpdater.requestUpdate();
   batchUpdater.requestUpdate();
 
-  expect(batchUpdater.runState).toBe('prepare');
-  
+  expect(batchUpdater.runState).toBe("prepare");
+
   jest.runAllTimers();
   expect(sendUpdateFn).toHaveBeenCalled();
-  expect(batchUpdater.runState).toBe('idle');
+  expect(batchUpdater.runState).toBe("idle");
 });

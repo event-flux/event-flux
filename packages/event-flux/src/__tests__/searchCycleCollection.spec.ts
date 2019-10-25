@@ -4,18 +4,17 @@ import StoreBase from "../StoreBase";
 
 jest.useFakeTimers();
 
-describe('cycleCollectionSearch', () => {
-  
-  test('should get the cycle list for simple cycle', () => {
+describe("cycleCollectionSearch", () => {
+  test("should get the cycle list for simple cycle", () => {
     let cycleList = searchCycleCollection({
       a: declareStore(StoreBase, ["b", "c"]),
       b: declareStore(StoreBase, ["a"]),
-      c: declareStore(StoreBase),
+      c: declareStore(StoreBase)
     });
     expect(cycleList).toEqual([new Set(["a", "b"])]);
   });
- 
-  test('should get the cycle list for complex cycle', () => {
+
+  test("should get the cycle list for complex cycle", () => {
     let cycleList = searchCycleCollection({
       a: declareStore(StoreBase, ["b", "c"]),
       b: declareStore(StoreBase, ["c", "d"]),
@@ -29,7 +28,7 @@ describe('cycleCollectionSearch', () => {
       new Set(["b", "d"]),
       new Set(["b", "d", "c"]),
       new Set(["a", "b", "d", "c"]),
-      new Set(["a", "c"]), 
+      new Set(["a", "c"])
     ]);
   });
 
@@ -42,9 +41,6 @@ describe('cycleCollectionSearch', () => {
       e: declareStore(StoreBase, ["a"])
     });
 
-    expect(cycleList).toEqual([
-      new Set(["a", "b"]),
-      new Set(["a", "d", "e"]),
-    ]);
+    expect(cycleList).toEqual([new Set(["a", "b"]), new Set(["a", "d", "e"])]);
   });
 });

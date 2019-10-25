@@ -1,23 +1,22 @@
-import { AnyStoreDeclarer } from './StoreDeclarer';
+import { AnyStoreDeclarer } from "./StoreDeclarer";
 
 interface StoreVisit {
   storeKey: string;
   isVisit: boolean;
 }
 
-type StoreVisits  = { [storeKey: string]: boolean };
+type StoreVisits = { [storeKey: string]: boolean };
 
 type StoreMapDeclarer = { [storeKey: string]: AnyStoreDeclarer };
 
 function depthSearchStore(
-  storeKey: string, 
-  storeVisits: StoreVisits, 
-  storeMap: StoreMapDeclarer, 
-  visitStoreList: string[], 
-  visitStoreSet: Set<string>, 
+  storeKey: string,
+  storeVisits: StoreVisits,
+  storeMap: StoreMapDeclarer,
+  visitStoreList: string[],
+  visitStoreSet: Set<string>,
   cycleDepList: { [key: string]: Set<string> }
 ) {
-  
   if (!storeMap[storeKey]) return;
 
   storeVisits[storeKey] = true;
@@ -40,7 +39,7 @@ function depthSearchStore(
     if (storeVisits[depName]) continue;
     depthSearchStore(depName, storeVisits, storeMap, visitStoreList, visitStoreSet, cycleDepList);
   }
-  
+
   visitStoreList.pop();
   visitStoreSet.delete(storeKey);
   storeVisits[storeKey] = false;

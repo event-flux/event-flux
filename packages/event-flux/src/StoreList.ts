@@ -1,9 +1,9 @@
-import { Emitter, Disposable } from 'event-kit';
-import StoreBase from './StoreBase';
-import AppStore from './AppStore';
-import { StoreBaseConstructor, StoreListDeclarerOptions, StoreListDeclarer } from './StoreDeclarer';
-import DispatchItem from './DispatchItem';
-import DispatchParent from './DispatchParent';
+import { Emitter, Disposable } from "event-kit";
+import StoreBase from "./StoreBase";
+import AppStore from "./AppStore";
+import { StoreBaseConstructor, StoreListDeclarerOptions, StoreListDeclarer } from "./StoreDeclarer";
+import DispatchItem from "./DispatchItem";
+import DispatchParent from "./DispatchParent";
 
 export default class StoreList<T> {
   length: number = 0;
@@ -13,7 +13,7 @@ export default class StoreList<T> {
   _StoreBuilder: StoreBaseConstructor<T> | undefined;
   _depStores: { [storeKey: string]: DispatchItem } = {};
   _stateKey: string | undefined;
-  
+
   _appStore: DispatchParent;
   _refCount = 0;
 
@@ -33,7 +33,13 @@ export default class StoreList<T> {
 
   init() {}
 
-  _inject(StoreBuilder: StoreBaseConstructor<T>, stateKey?: string, depStores?: { [storeKey: string]: DispatchItem }, initState?: any, options?: StoreListDeclarerOptions) {
+  _inject(
+    StoreBuilder: StoreBaseConstructor<T>,
+    stateKey?: string,
+    depStores?: { [storeKey: string]: DispatchItem },
+    initState?: any,
+    options?: StoreListDeclarerOptions
+  ) {
     this._stateKey = stateKey;
     if (!stateKey) console.error("StoreList can not let stateKey to null");
 
@@ -94,19 +100,25 @@ export default class StoreList<T> {
     }
   }
 
-  forEach(callback: (value: StoreBase<T>, index: number, array: StoreBase<T>[]) => void) { 
-    return this.storeArray.forEach(callback); 
+  forEach(callback: (value: StoreBase<T>, index: number, array: StoreBase<T>[]) => void) {
+    return this.storeArray.forEach(callback);
   }
 
-  map(callback: (value: StoreBase<T>, index: number, array: StoreBase<T>[]) => any) { 
-    return this.storeArray.map(callback); 
+  map(callback: (value: StoreBase<T>, index: number, array: StoreBase<T>[]) => any) {
+    return this.storeArray.map(callback);
   }
-  filter(callback: (value: StoreBase<T>, index: number, array: StoreBase<T>[]) => boolean) { 
-    return this.storeArray.filter(callback); 
+  filter(callback: (value: StoreBase<T>, index: number, array: StoreBase<T>[]) => boolean) {
+    return this.storeArray.filter(callback);
   }
-  get(index: number) { return this.storeArray[index]; }
-  slice(begin: number, end: number) { return this.storeArray.slice(begin, end); }
-  indexOf(item: StoreBase<T>) { return this.storeArray.indexOf(item); }
+  get(index: number) {
+    return this.storeArray[index];
+  }
+  slice(begin: number, end: number) {
+    return this.storeArray.slice(begin, end);
+  }
+  indexOf(item: StoreBase<T>) {
+    return this.storeArray.indexOf(item);
+  }
 
   _addRef() {
     this._refCount += 1;

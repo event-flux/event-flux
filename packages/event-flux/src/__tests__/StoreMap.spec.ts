@@ -1,11 +1,11 @@
-import StoreBase from '../StoreBase';
-import StoreMap from '../StoreMap';
-import RecycleStrategy from '../RecycleStrategy';
+import StoreBase from "../StoreBase";
+import StoreMap from "../StoreMap";
+import RecycleStrategy from "../RecycleStrategy";
 
 jest.useFakeTimers();
 
-describe('StoreMap', () => {
-  test('init with size 0', () => {
+describe("StoreMap", () => {
+  test("init with size 0", () => {
     let dispatchParent = { setState: jest.fn };
     let storeList = new StoreMap(dispatchParent);
     storeList._inject(StoreBase, "hello", { dep: new StoreBase(dispatchParent) }, undefined, {});
@@ -14,11 +14,15 @@ describe('StoreMap', () => {
     expect(storeList.storeMap.size).toEqual(0);
   });
 
-  test('init with key1, key2 and initial states', () => {
+  test("init with key1, key2 and initial states", () => {
     let dispatchParent = { setState: jest.fn };
     let storeList = new StoreMap(dispatchParent);
     storeList._inject(
-      StoreBase, "hello", { dep: new StoreBase(dispatchParent) }, { key1: { hello: 0 }, key2: { hello: 1 } }, { keys: ["key1", "key2"] }
+      StoreBase,
+      "hello",
+      { dep: new StoreBase(dispatchParent) },
+      { key1: { hello: 0 }, key2: { hello: 1 } },
+      { keys: ["key1", "key2"] }
     );
 
     storeList._init();
@@ -31,45 +35,60 @@ describe('StoreMap', () => {
     expect(storeList.storeMap.get("key2").dep).toBeTruthy();
   });
 
-  test('init with key1, key2 and can update to parent', async () => {
+  test("init with key1, key2 and can update to parent", async () => {
     let dispatchParent = { setState: jest.fn };
     let storeList = new StoreMap(dispatchParent);
-    storeList._inject(StoreBase, "hello", {}, undefined, { keys: ["key1", "key2"] });
+    storeList._inject(StoreBase, "hello", {}, undefined, {
+      keys: ["key1", "key2"]
+    });
 
     await storeList._init();
     expect(storeList.state).toEqual({ key1: {}, key2: {} });
 
-    storeList.storeMap.get("key1").setState({ "hello": 11 });
-    storeList.storeMap.get("key2").setState({ "hello": 12 });
+    storeList.storeMap.get("key1").setState({ hello: 11 });
+    storeList.storeMap.get("key2").setState({ hello: 12 });
     jest.runAllTimers();
 
-    expect(storeList.state).toEqual({ key1: { "hello": 11 }, key2: { "hello": 12 } })
+    expect(storeList.state).toEqual({
+      key1: { hello: 11 },
+      key2: { hello: 12 }
+    });
   });
 
-  test('init with key1, key2 and dispose normally', async () => {
+  test("init with key1, key2 and dispose normally", async () => {
     let dispatchParent = { setState: jest.fn() };
     let storeList = new StoreMap(dispatchParent);
-    storeList._inject(StoreBase, "hello", {}, undefined, { keys: ["key1", "key2"] });
+    storeList._inject(StoreBase, "hello", {}, undefined, {
+      keys: ["key1", "key2"]
+    });
 
     await storeList._init();
     expect(storeList.state).toEqual({ key1: {}, key2: {} });
 
-    storeList.storeMap.get("key1").setState({ "hello": 11 });
-    storeList.storeMap.get("key2").setState({ "hello": 12 });
+    storeList.storeMap.get("key1").setState({ hello: 11 });
+    storeList.storeMap.get("key2").setState({ hello: 12 });
     jest.runAllTimers();
 
-    expect(storeList.state).toEqual({ key1: { "hello": 11 }, key2: { "hello": 12 } });
+    expect(storeList.state).toEqual({
+      key1: { hello: 11 },
+      key2: { hello: 12 }
+    });
 
     let store0 = storeList.storeMap.get("key1");
     store0.dispose = jest.fn();
     await storeList.dispose();
     expect(store0.dispose).toHaveBeenCalled();
     expect(storeList.storeMap.size).toEqual(0);
-    expect(dispatchParent.setState).toHaveBeenLastCalledWith({ "hello": undefined });
+    expect(dispatchParent.setState).toHaveBeenLastCalledWith({
+      hello: undefined
+    });
   });
 
   test("request store keys", async () => {
-    let dispatchParent = { setState: jest.fn(), _recycleStrategy: RecycleStrategy.Urgent };
+    let dispatchParent = {
+      setState: jest.fn(),
+      _recycleStrategy: RecycleStrategy.Urgent
+    };
     let storeMap = new StoreMap(dispatchParent);
     storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
 
@@ -107,7 +126,7 @@ describe('StoreMap', () => {
     expect(Array.from(storeMap.keys())).toEqual(["key1"]);
     storeMap.delete("key1");
     expect(Array.from(storeMap.keys())).toEqual([]);
-    
+
     storeMap.add(["key1", "key2"]);
     expect(Array.from(storeMap.keys())).toEqual(["key1", "key2"]);
     storeMap.delete(["key1"]);
