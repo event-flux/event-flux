@@ -470,10 +470,16 @@ describe('withEventFlux', () => {
     }
     const MyViewWrap = withEventFlux(["todo1Store", ["state1", "state2"]])(MyView);
 
+    class MyComponent extends React.PureComponent<any> {
+      render() {
+        return <MyViewWrap ref={this.props.innerRef}/>;
+      }
+    }
+
     function Fixture(props: any) {
       return (
         <Provider appStore={appStore}>
-          <MyViewWrap ref={props.innerRef}/>
+          <MyComponent innerRef={props.innerRef}/>
         </Provider>
       );
     }
