@@ -126,7 +126,10 @@ describe("StoreMap", () => {
     storeMap._inject(StoreBase, "hello", {}, undefined, { recycleStrategy: RecycleStrategy.Urgent });
     expect(storeMap._recycleStrategy).toEqual(RecycleStrategy.Urgent);
 
+    let observer = jest.fn();
+    storeMap.onDidChangeRS(observer);
     storeMap.setRecycleStrategy(RecycleStrategy.Cache, { cacheLimit: 2 });
+    expect(observer).toHaveBeenLastCalledWith(RecycleStrategy.Cache);
 
     let disposable1 = storeMap.request(["key1", "key2", "key3"]);
     expect(Array.from(storeMap.storeMap.keys())).toEqual(["key1", "key2", "key3"]);

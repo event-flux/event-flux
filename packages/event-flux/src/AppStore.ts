@@ -4,16 +4,17 @@ import RecycleStrategy from "./RecycleStrategy";
 import searchCycleCollection from "./searchCycleCollection";
 import DispatchItem from "./DispatchItem";
 import DispatchParent from "./DispatchParent";
+import { Emitter } from "event-kit";
 const IS_APP_STORE = "@@__APP_STORE__@@";
 
 export default class AppStore implements DispatchParent {
   _isInit = false;
-  didChangeCallbacks: Function[] = [];
 
   batchUpdater: BatchUpdateHost;
   prevState: any = {};
   state: any = {};
   stores: { [storeKey: string]: DispatchItem } = {};
+  _emitter = new Emitter();
 
   _storeRegisterMap: { [storeName: string]: AnyStoreDeclarer } = {};
   // Save all of the circular dependency stores name.
@@ -56,7 +57,7 @@ export default class AppStore implements DispatchParent {
 
   _sendUpdate() {
     this.handleWillChange && this.handleWillChange(this.prevState, this.state);
-    this.didChangeCallbacks.forEach(callback => callback(this.state));
+    this._emitter.emit("did-change", this.state);
     this.prevState = this.state;
   }
 
@@ -66,16 +67,8 @@ export default class AppStore implements DispatchParent {
 
   handleWillChange(prevState: any, state: any) {}
 
-  onDidChange(callback: Function) {
-    this.didChangeCallbacks.push(callback);
-    return {
-      dispose: () => {
-        let index = this.didChangeCallbacks.indexOf(callback);
-        if (index !== -1) {
-          this.didChangeCallbacks.splice(index, 1);
-        }
-      }
-    };
+  onDidChange(callback: (state: any) => void) {
+    return this._emitter.on("did-change", callback);
   }
 
   preloadStores(stores: string[], lifetime: "static" | "dynamic" = "dynamic") {
@@ -123,7 +116,7 @@ export default class AppStore implements DispatchParent {
   }
 
   dispose() {
-    this.didChangeCallbacks = [];
+    this._emitter.dispose();
     this.prevState = this.state = null;
     for (var key in this.stores) {
       let store = this.stores[key];
@@ -132,19 +125,26 @@ export default class AppStore implements DispatchParent {
     this.stores = {};
   }
 
+  onDidChangeRS(callback: (recycleStrategy: RecycleStrategy) => void) {
+    return this._emitter.on("did-change-rs", callback);
+  }
+
   setRecycleStrategy(recycleStrategy: RecycleStrategy) {
-    if (this._recycleStrategy !== recycleStrategy && recycleStrategy === RecycleStrategy.Urgent) {
-      for (let finalStoreKey in this.stores) {
-        let store = this.stores[finalStoreKey];
-        if (store && store.getRefCount() === 0) {
-          let [storeKey, opts] = this._parseStoreKey(finalStoreKey);
-          this._disposeStoreAndDeps(storeKey, store, opts);
-        } else if (store && store._disposeSubStores) {
-          store._disposeSubStores();
+    if (this._recycleStrategy !== recycleStrategy) {
+      this._recycleStrategy = recycleStrategy;
+      if (recycleStrategy === RecycleStrategy.Urgent) {
+        for (let finalStoreKey in this.stores) {
+          let store = this.stores[finalStoreKey];
+          if (store && store.getRefCount() === 0) {
+            let [storeKey, opts] = this._parseStoreKey(finalStoreKey);
+            this._disposeStoreAndDeps(storeKey, store, opts);
+          } else if (store && store._disposeSubStores) {
+            store._disposeSubStores();
+          }
         }
       }
+      this._emitter.emit("did-change-rs", recycleStrategy);
     }
-    this._recycleStrategy = recycleStrategy;
   }
 
   /**

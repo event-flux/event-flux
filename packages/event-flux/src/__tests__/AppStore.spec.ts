@@ -228,7 +228,10 @@ describe("AppStore", () => {
     );
     appStore.preloadStores(["todo3Store", "todo1Store", "todo2Store"]);
 
+    let observer = jest.fn();
+    appStore.onDidChangeRS(observer);
     appStore.setRecycleStrategy(RecycleStrategy.Urgent);
+    expect(observer).toHaveBeenLastCalledWith(RecycleStrategy.Urgent);
     expect(appStore.stores).toEqual({});
   });
 

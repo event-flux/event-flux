@@ -1,7 +1,7 @@
 import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from "./StoreDeclarer";
 import DispatchItem from "./DispatchItem";
 import DispatchParent from "./DispatchParent";
-import { DisposableLike, CompositeDisposable } from "event-kit";
+import { DisposableLike, CompositeDisposable, Emitter } from "event-kit";
 import { RecycleStrategy, AppStore } from ".";
 import LRU from "./LRU";
 
@@ -47,6 +47,7 @@ export default class StoreMap<T> {
 
   _appStore: DispatchParent;
   _refCount = 0;
+  _emitter = new Emitter();
 
   __initStates__: any;
   state: any = {};
@@ -104,6 +105,10 @@ export default class StoreMap<T> {
     }
   }
 
+  onDidChangeRS(callback: (recycleStrategy: RecycleStrategy) => void) {
+    return this._emitter.on("did-change-rs", callback);
+  }
+
   setRecycleStrategy(recycleStrategy: RecycleStrategy, options?: { cacheLimit: number | undefined }) {
     if (this._recycleStrategy !== recycleStrategy) {
       this._recycleStrategy = recycleStrategy;
@@ -115,6 +120,7 @@ export default class StoreMap<T> {
           this._deleteOne(removeKey);
         });
       }
+      this._emitter.emit("did-change-rs", recycleStrategy);
     }
   }
 
