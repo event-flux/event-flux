@@ -123,7 +123,9 @@ describe("StoreMap", () => {
       _recycleStrategy: RecycleStrategy.Urgent
     };
     let storeMap = new StoreMap(dispatchParent);
-    storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
+    storeMap._inject(StoreBase, "hello", {}, undefined, { recycleStrategy: RecycleStrategy.Urgent });
+    expect(storeMap._recycleStrategy).toEqual(RecycleStrategy.Urgent);
+
     storeMap.setRecycleStrategy(RecycleStrategy.Cache, { cacheLimit: 2 });
 
     let disposable1 = storeMap.request(["key1", "key2", "key3"]);

@@ -89,6 +89,9 @@ export default class StoreMap<T> {
       this.__initStates__ = initState;
       this.state = initState;
     }
+    if (options && options.recycleStrategy != null) {
+      this.setRecycleStrategy(options.recycleStrategy, { cacheLimit: options.cacheLimit });
+    }
   }
 
   // Dispose all the sub stores that reference count is 0
@@ -101,7 +104,7 @@ export default class StoreMap<T> {
     }
   }
 
-  setRecycleStrategy(recycleStrategy: RecycleStrategy, options?: { cacheLimit: number }) {
+  setRecycleStrategy(recycleStrategy: RecycleStrategy, options?: { cacheLimit: number | undefined }) {
     if (this._recycleStrategy !== recycleStrategy) {
       this._recycleStrategy = recycleStrategy;
       this._keyCache = undefined;

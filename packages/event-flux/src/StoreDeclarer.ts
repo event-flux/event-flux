@@ -3,6 +3,7 @@ import AppStore from "./AppStore";
 import StoreList from "./StoreList";
 import DispatchParent from "./DispatchParent";
 import StoreMap from "./StoreMap";
+import RecycleStrategy from "./RecycleStrategy";
 
 export interface IGenericOptions {
   stateKey?: string;
@@ -147,6 +148,8 @@ export interface StoreMapDeclarerOptions extends IGenericOptions {
   storeKey?: string;
   stateKey?: string;
   keys?: string[];
+  recycleStrategy?: RecycleStrategy;
+  cacheLimit?: number;
   StoreMap?: StoreMapConstructor<any>;
   [key: string]: any;
 }
