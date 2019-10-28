@@ -109,6 +109,13 @@ export default class StoreMap<T> {
     return this._emitter.on("did-change-rs", callback);
   }
 
+  observeRS(callback: (recycleStrategy: RecycleStrategy) => void) {
+    if (this._recycleStrategy != null) {
+      callback(this._recycleStrategy);
+    }
+    return this.onDidChangeRS(callback);
+  }
+
   setRecycleStrategy(recycleStrategy: RecycleStrategy, options?: { cacheLimit: number | undefined }) {
     if (this._recycleStrategy !== recycleStrategy) {
       this._recycleStrategy = recycleStrategy;
@@ -236,6 +243,7 @@ export default class StoreMap<T> {
     this.clear();
     this._disposables.dispose();
     this.state = {};
+    this._emitter.dispose();
     if (this._stateKey) {
       this._appStore.setState({ [this._stateKey]: undefined });
     }

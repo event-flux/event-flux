@@ -138,7 +138,7 @@ export default class AppStore implements DispatchParent {
           if (store && store.getRefCount() === 0) {
             let [storeKey, opts] = this._parseStoreKey(finalStoreKey);
             this._disposeStoreAndDeps(storeKey, store, opts);
-          } else if (store && store._disposeSubStores) {
+          } else if (store && store._recycleStrategy == null && store._disposeSubStores) {
             store._disposeSubStores();
           }
         }
