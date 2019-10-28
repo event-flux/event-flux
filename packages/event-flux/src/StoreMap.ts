@@ -3,6 +3,7 @@ import DispatchItem from "./DispatchItem";
 import DispatchParent from "./DispatchParent";
 import { DisposableLike, CompositeDisposable } from "event-kit";
 import { RecycleStrategy, AppStore } from ".";
+import LRU from "./LRU";
 
 export enum OperateMode {
   None,
@@ -40,6 +41,9 @@ export default class StoreMap<T> {
   _StoreBuilder: StoreBaseConstructor<T> | undefined;
   _depStores: { [storeKey: string]: DispatchItem } = {};
   _stateKey: string | undefined;
+
+  _recycleStrategy: RecycleStrategy | undefined;
+  _keyCache: LRU<string> | undefined;
 
   _appStore: DispatchParent;
   _refCount = 0;
@@ -97,6 +101,20 @@ export default class StoreMap<T> {
     }
   }
 
+  setRecycleStrategy(recycleStrategy: RecycleStrategy, options?: { cacheLimit: number }) {
+    if (this._recycleStrategy !== recycleStrategy) {
+      this._recycleStrategy = recycleStrategy;
+      this._keyCache = undefined;
+      if (recycleStrategy === RecycleStrategy.Urgent) {
+        this._disposeSubStores();
+      } else if (recycleStrategy === RecycleStrategy.Cache) {
+        this._keyCache = new LRU(options && options.cacheLimit, (removeKey: string) => {
+          this._deleteOne(removeKey);
+        });
+      }
+    }
+  }
+
   setInitStates(initStates: any) {
     this.__initStates__ = initStates;
   }
@@ -108,14 +126,27 @@ export default class StoreMap<T> {
       this._keyRefs[storeKey] += 1;
     } else {
       this._keyRefs[storeKey] = 1;
-      this._addOne(storeKey);
+
+      // If the cache has not this key, then we need create the new store.
+      if (!this._keyCache || !this._keyCache.take(storeKey)) {
+        this._addOne(storeKey);
+      }
     }
   }
 
   releaseStore(storeKey: string) {
     this._keyRefs[storeKey] -= 1;
-    if (this._keyRefs[storeKey] === 0 && (this._appStore as AppStore)._recycleStrategy === RecycleStrategy.Urgent) {
-      this._deleteOne(storeKey);
+    if (this._keyRefs[storeKey] === 0) {
+      if (
+        this._recycleStrategy === undefined &&
+        (this._appStore as AppStore)._recycleStrategy === RecycleStrategy.Urgent
+      ) {
+        this._deleteOne(storeKey);
+      } else if (this._recycleStrategy === RecycleStrategy.Urgent) {
+        this._deleteOne(storeKey);
+      } else if (this._recycleStrategy === RecycleStrategy.Cache) {
+        this._keyCache!.put(storeKey, storeKey);
+      }
     }
   }
 

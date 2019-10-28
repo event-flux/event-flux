@@ -117,6 +117,25 @@ describe("StoreMap", () => {
     expect(storeMap.has("key1")).toBeFalsy();
   });
 
+  test("request store keys with recycle strategy", async () => {
+    let dispatchParent = {
+      setState: jest.fn(),
+      _recycleStrategy: RecycleStrategy.Urgent
+    };
+    let storeMap = new StoreMap(dispatchParent);
+    storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
+    storeMap.setRecycleStrategy(RecycleStrategy.Cache, { cacheLimit: 2 });
+
+    let disposable1 = storeMap.request(["key1", "key2", "key3"]);
+    expect(Array.from(storeMap.storeMap.keys())).toEqual(["key1", "key2", "key3"]);
+    disposable1.dispose();
+    expect(Array.from(storeMap.storeMap.keys())).toEqual(["key2", "key3"]);
+    expect(Object.keys(storeMap._keyCache!.cache)).toEqual(["key2", "key3"]);
+
+    disposable1 = storeMap.request(["key2", "key3"]);
+    expect(Object.keys(storeMap._keyCache!.cache)).toEqual([]);
+  });
+
   test("add and delete store keys", () => {
     let dispatchParent = { setState: jest.fn() };
     let storeMap = new StoreMap(dispatchParent);

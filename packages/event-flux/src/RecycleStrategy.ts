@@ -1,5 +1,6 @@
 enum RecycleStrategy {
   Urgent,
+  Cache,
   Never
 }
 
