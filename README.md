@@ -1,10 +1,16 @@
 # event-flux
 
-### event-flux
+`event-flux` is a predictable state container for JavaScript apps.
 
-[![Travis CI](https://travis-ci.org/event-flux/event-flux.svg?branch=master)](https://travis-ci.org/event-flux/event-flux) [![codecov](https://codecov.io/gh/event-flux/event-flux/branch/master/graph/badge.svg)](https://codecov.io/gh/event-flux/event-flux) [![npm version](https://badge.fury.io/js/event-flux.svg)](https://www.npmjs.com/package/event-flux) [![Downloads](https://img.shields.io/npm/dm/event-flux.svg)](https://www.npmjs.com/package/event-flux)
+- Predictable - helps you write applications that behave consistently, run in different environments (client, server, and native), and are easy to test.
+- Event-Driven - The stores that have different functions will be connected by event, so different stores decouple from each other.
+- Single Data Flow - Like flux and other flux like framework, `event-flux` only flow data from `Store` to UI Components.
+- Lazy Load - Every `Store` (like MVC's module) will be loaded and initialized only when UI Component need and can be optional disposed when UI Component don't need it.
+- Dependency Inject - Use dependency inject to declare one store's dependencies with other stores.
 
 `event-flux` is the flux-like store management. It manage the complex links in those stores and make the view respond to the store change easy.
+
+[![Travis CI](https://travis-ci.org/event-flux/event-flux.svg?branch=master)](https://travis-ci.org/event-flux/event-flux) [![codecov](https://codecov.io/gh/event-flux/event-flux/branch/master/graph/badge.svg)](https://codecov.io/gh/event-flux/event-flux) [![npm version](https://badge.fury.io/js/event-flux.svg)](https://www.npmjs.com/package/event-flux) [![Downloads](https://img.shields.io/npm/dm/event-flux.svg)](https://www.npmjs.com/package/event-flux)
 
 #### How it run
 
