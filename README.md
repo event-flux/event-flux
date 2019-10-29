@@ -4,27 +4,27 @@
 
 [![Travis CI](https://travis-ci.org/event-flux/event-flux.svg?branch=master)](https://travis-ci.org/event-flux/event-flux) [![codecov](https://codecov.io/gh/event-flux/event-flux/branch/master/graph/badge.svg)](https://codecov.io/gh/event-flux/event-flux) [![npm version](https://badge.fury.io/js/event-flux.svg)](https://www.npmjs.com/package/event-flux) [![Downloads](https://img.shields.io/npm/dm/event-flux.svg)](https://www.npmjs.com/package/event-flux)
 
-_event-flux_ is the flux-like store management. It manage the complex links in those stores and make the view respond to the store change easy.
+`event-flux` is the flux-like store management. It manage the complex links in those stores and make the view respond to the store change easy.
 
 #### How it run
 
-_event-flux_ contains the following objects:
+`event-flux` contains the following objects:
 
-* Store: the state container that like MVC's model.
-* StoreApp: the store management container. It manage the life cycle of the stores and control the initialization sequence.
+- Store: the state container that like MVC's model.
+- AppStore: the store management container. It manage the life cycle of the stores and control the initialization sequence.
 
-_event-flux_ use the event-emitter style to notify other stores and components that the store state has changed.
+`event-flux` use the event-emitter style to notify other stores and components that the store state has changed.
 
 #### Install the package
 
 ```bash
-npm install event-flux --save
+npm install event-flux react-event-flux --save
 ```
 
 require the package by
 
 ```javascript
-const { StoreBase, Provider, AppStoreBase } = require('event-flux');
+const { StoreBase, AppStore } = require("event-flux");
 ```
 
 #### How to use
@@ -36,19 +36,19 @@ First, define some stores that your app need. Store object is the class extends 
 The `Store` class contains `constructor` function that set the initialization state and some action methods that change the store's state by `setState`.
 
 ```javascript
-import { StoreBase } from 'event-flux';
+import { StoreBase } from "event-flux";
 
 export default class TodoStore extends StoreBase {
   constructor(key) {
     super();
-      this.state = { key, todos: store(key) };
+    this.state = { key, todos: store(key) };
   }
 
   addTodo(title) {
-      let todos = this.state.todos.concat({
+    let todos = this.state.todos.concat({
       title: title,
       completed: false
-      });
+    });
     this.setState({ todos });
   }
 }
@@ -72,26 +72,21 @@ class TodoItem extends PureComponent {
 Then, create some `PureComponent` that observe the store's state change and `connect` the root store to the container component.
 
 ```javascript
-const { withState } = require('event-flux');
+const { withState, Filter } = require("event-flux");
 class TodoApp extends PureComponent {
   constructor(props, context) {
     super(props);
     this.state = {
       nowShowing: ALL_TODOS,
       editing: null,
-      newTodo: ''
+      newTodo: ""
     };
-    this.todoStore = this.props.todoStore;
-  }
-
-  componentWillMount() {
-    this.observeStore(this.todoStore);
   }
 }
 
-const mapStateToProps = (state) => state;
-const mapStoreToProps = (appStore) => ({ todoStore: appStore.todoStore });
-export default withState(mapStoreToProps, mapStateToProps)(TodoApp);
+withEventFlux({
+  todoStore: { filter: Filter.FA }
+})(TodoApp);
 ```
 
 The `TodoApp` will observe the `todoStore` state. When the `todoStore` state changes, the TodoApp's props will be changed and the `TodoApp` component's state will be changed.
@@ -99,17 +94,18 @@ The `TodoApp` will observe the `todoStore` state. When the `todoStore` state cha
 #### Render the DOM
 
 ```javascript
-import { Provider } from 'event-flux';
-import TodoApp from './TodoApp';
-import TodoStore from './TodoStore';
+import { Provider } from "react-event-flux";
+import TodoApp from "./TodoApp";
+import TodoStore from "./TodoStore";
+
+let appStore = new AppStore([TodoStoreDeclarer, TodoGroupStoreDeclarer]).init();
 
 ReactDOM.render(
-  <Provider stores={[TodoStore]}>
+  <Provider appStore={appStore}>
     <TodoApp />
-  </appStore>,
-  document.getElementsByClassName('todoapp')[0]
+  </Provider>,
+  document.getElementsByClassName("todoapp")[0]
 );
 ```
 
-More info can refer to `example/todoMVC/`
-
+More info can refer to `https://github.com/event-flux/event-flux-examples`.
