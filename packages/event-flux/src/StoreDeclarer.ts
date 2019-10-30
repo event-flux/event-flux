@@ -2,6 +2,7 @@ import StoreBase from "./StoreBase";
 import StoreList from "./StoreList";
 import StoreMap from "./StoreMap";
 import RecycleStrategy from "./RecycleStrategy";
+import AppStore from "./AppStore";
 
 export interface IGenericOptions {
   stateKey?: string;
@@ -74,7 +75,7 @@ export class StoreDeclarer<T> {
     this.options = storeOptions;
   }
 
-  create(): StoreBase<T> {
+  create(appStore: AppStore): StoreBase<T> {
     return new this.Store();
   }
 
@@ -118,7 +119,7 @@ export class StoreListDeclarer<T> {
     this.options = storeOptions;
   }
 
-  create(): StoreList<T> {
+  create(appStore: AppStore): StoreList<T> {
     const ListClass = this.options!.StoreList || StoreList;
     return new ListClass();
   }
@@ -166,7 +167,7 @@ export class StoreMapDeclarer<T> {
     this.options = storeOptions;
   }
 
-  create(): StoreMap<T> {
+  create(appStore: AppStore): StoreMap<T> {
     const MapClass = this.options!.StoreMap || StoreMap;
     return new MapClass();
   }
