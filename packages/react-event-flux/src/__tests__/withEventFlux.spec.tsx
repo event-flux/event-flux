@@ -28,8 +28,8 @@ import withEventFlux, {
 jest.useFakeTimers();
 
 class TodoStore extends StoreBase<{ state1: string; state2: string }> {
-  constructor(appStore: DispatchParent) {
-    super(appStore);
+  constructor() {
+    super();
     this.state = { state1: "state1", state2: "todo2" };
   }
 }

@@ -1,7 +1,5 @@
 import StoreBase from "./StoreBase";
-import AppStore from "./AppStore";
 import StoreList from "./StoreList";
-import DispatchParent from "./DispatchParent";
 import StoreMap from "./StoreMap";
 import RecycleStrategy from "./RecycleStrategy";
 
@@ -42,19 +40,18 @@ function parseOptions<OptionT extends IGenericOptions>(
 }
 
 export interface StoreBaseConstructor<T> {
-  new (appStore: DispatchParent | AppStore): StoreBase<T>;
+  new (): StoreBase<T>;
 }
 
 export interface StoreListConstructor<T> {
-  new (appStore: DispatchParent | AppStore): StoreList<T>;
+  new (): StoreList<T>;
 }
 
 export interface StoreMapConstructor<T> {
-  new (appStore: DispatchParent | AppStore): StoreMap<T>;
+  new (): StoreMap<T>;
 }
 
 export interface StoreDeclarerOptions extends IGenericOptions {
-  args?: any;
   storeKey?: string;
   stateKey?: string;
   [key: string]: any;
@@ -77,8 +74,8 @@ export class StoreDeclarer<T> {
     this.options = storeOptions;
   }
 
-  create(appStore: AppStore): StoreBase<T> {
-    return new this.Store(appStore);
+  create(): StoreBase<T> {
+    return new this.Store();
   }
 
   [IS_STORE] = true;
@@ -97,7 +94,6 @@ export function declareStore<T>(
 }
 
 export interface StoreListDeclarerOptions extends IGenericOptions {
-  args?: [any];
   storeKey?: string;
   stateKey?: string;
   size?: number;
@@ -122,9 +118,9 @@ export class StoreListDeclarer<T> {
     this.options = storeOptions;
   }
 
-  create(appStore: AppStore): StoreList<T> {
+  create(): StoreList<T> {
     const ListClass = this.options!.StoreList || StoreList;
-    return new ListClass(appStore);
+    return new ListClass();
   }
 
   [IS_STORE_LIST] = true;
@@ -144,7 +140,6 @@ export function declareStoreList<T>(
 
 // when directInsert is true, then the child state will set into the store directly.
 export interface StoreMapDeclarerOptions extends IGenericOptions {
-  args?: [any];
   storeKey?: string;
   stateKey?: string;
   keys?: string[];
@@ -171,9 +166,9 @@ export class StoreMapDeclarer<T> {
     this.options = storeOptions;
   }
 
-  create(appStore: AppStore): StoreMap<T> {
+  create(): StoreMap<T> {
     const MapClass = this.options!.StoreMap || StoreMap;
-    return new MapClass(appStore);
+    return new MapClass();
   }
 
   [IS_STORE_MAP] = true;

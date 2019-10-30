@@ -13,8 +13,8 @@ describe("StoreBase", () => {
       }
     }
     let appStore = new AppStore();
-    let store = new MyStore(appStore);
-    store._inject(MyStore, "my", {}, undefined);
+    let store = new MyStore();
+    store._inject(appStore, MyStore, "my", {}, undefined);
     store._init();
 
     expect(store.state).toEqual({ hello: 1 });
@@ -31,12 +31,11 @@ describe("StoreBase", () => {
       }
     }
     let appStore = { setState: jest.fn() };
-    let store = new MyStore(appStore);
-    store._inject(MyStore, "my", {}, undefined);
+    let store = new MyStore();
+    store._inject(appStore, MyStore, "my", {}, undefined);
     await store._init();
 
     expect(store.state).toEqual({ hello: 2 });
-    // console.log(appStore.setState)
     expect(appStore.setState).toHaveBeenCalledTimes(2);
     expect(appStore.setState).toHaveBeenLastCalledWith({ my: { hello: 2 } });
   });
@@ -70,8 +69,8 @@ describe("StoreBase", () => {
       onDidAddSome() {}
     }
     let appStore = { setState: jest.fn() };
-    let store = new MyStore(appStore);
-    store._inject(MyStore, "my", {}, undefined);
+    let store = new MyStore();
+    store._inject(appStore, MyStore, "my", {}, undefined);
     await store._init();
 
     appStore.setState.mockReset();
@@ -98,7 +97,7 @@ describe("StoreBase", () => {
   });
 
   test("onDidUpdate method", () => {
-    let store = new StoreBase(new AppStore());
+    let store = new StoreBase();
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(0);
@@ -108,7 +107,7 @@ describe("StoreBase", () => {
   });
 
   test("observe method", () => {
-    let store = new StoreBase(new AppStore());
+    let store = new StoreBase();
     let stateChangeMock = jest.fn();
     store.observe(stateChangeMock);
     expect(stateChangeMock.mock.calls.length).toBe(1);
@@ -118,7 +117,7 @@ describe("StoreBase", () => {
   });
 
   test("setState method", () => {
-    let store = new StoreBase(new AppStore());
+    let store = new StoreBase();
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
     store.setState({ hello: "world" });
@@ -127,7 +126,7 @@ describe("StoreBase", () => {
   });
 
   test("setState will update test", () => {
-    let store = new StoreBase(new AppStore());
+    let store = new StoreBase();
     store.setState({ hello: "hello1" });
     let stateChangeMock = jest.fn();
     store.onDidUpdate(stateChangeMock);
@@ -147,17 +146,17 @@ describe("StoreBase", () => {
   });
 
   test("storeBase constructor and dispose test", () => {
-    let store = new StoreBase(new AppStore());
+    let store = new StoreBase();
     store.addDisposable({ dispose: () => {} });
     store.onDidUpdate(jest.fn);
     store.dispose();
 
-    expect(store._emitter.disposed).toBeTruthy();
-    expect(store._disposables.disposed).toBeTruthy();
+    expect(store.emitter.disposed).toBeTruthy();
+    expect(store.disposables.disposed).toBeTruthy();
   });
 
   test("storeBase addRef and decreaseRef test", () => {
-    let store = new StoreBase(new AppStore());
+    let store = new StoreBase();
 
     store._addRef();
     store._decreaseRef();

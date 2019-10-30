@@ -5,8 +5,8 @@ import RecycleStrategy from "../RecycleStrategy";
 import DispatchParent from "../DispatchParent";
 
 class TodoStore extends StoreBase<{ todo2: string }> {
-  constructor(appStore: DispatchParent) {
-    super(appStore);
+  constructor() {
+    super();
     this.state = { todo2: "todo2" };
   }
 }
@@ -16,7 +16,7 @@ jest.useFakeTimers();
 describe("AppStore", () => {
   test("can observe store state change", () => {
     let appStore = new AppStore();
-    let todo2Store = new TodoStore(appStore);
+    let todo2Store = new TodoStore();
     appStore.stores = { todo2Store };
     todo2Store.observe(state => appStore.setState({ todo2: state }));
     expect(appStore.state.todo2).toEqual({ todo2: "todo2" });
@@ -34,7 +34,7 @@ describe("AppStore", () => {
     appStore.onDidChange(onChange);
     appStore.handleWillChange = jest.fn();
 
-    let todo2Store = new TodoStore(appStore);
+    let todo2Store = new TodoStore();
     todo2Store.observe(state => appStore.setState({ todo2: state }));
     appStore.stores = { todo2Store };
     let prevState = appStore.state;
@@ -163,14 +163,14 @@ describe("AppStore", () => {
     let appStore = new AppStore({ todo3: { hello: "world" } });
     appStore.registerStore(declareStore(Todo1Store, ["todo2Store", "todo3Store"]));
     appStore.registerStore(declareStore(Todo2Store, ["todo1Store"]));
-    appStore.registerStore(declareStore(Todo3Store, { args: "myArg" }));
+    appStore.registerStore(declareStore(Todo3Store));
 
     appStore.init();
 
     Todo3Store.prototype.init = jest.fn();
 
     appStore.requestStore("todo3Store");
-    expect((appStore.stores.todo3Store as StoreBase<any>)._args).toBe("myArg");
+    // expect((appStore.stores.todo3Store as StoreBase<any>)._args).toBe("myArg");
     expect((appStore.stores.todo3Store as StoreBase<any>)._stateKey).toBe("todo3");
     expect((appStore.stores.todo3Store as StoreBase<any>).state).toEqual({
       hello: "world"
@@ -178,7 +178,7 @@ describe("AppStore", () => {
     expect((appStore.stores.todo3Store as StoreBase<any>).init).toHaveBeenCalled();
 
     appStore.requestStore("todo1Store");
-    expect((appStore.stores.todo1Store as StoreBase<any>)._args).toBe(undefined);
+    // expect((appStore.stores.todo1Store as StoreBase<any>)._args).toBe(undefined);
     expect((appStore.stores.todo1Store as StoreBase<any>)._stateKey).toBe("todo1");
     expect((appStore.stores.todo1Store as StoreBase<any>).state).toEqual({});
     expect((appStore.stores.todo3Store as StoreBase<any>).init).toHaveBeenCalled();

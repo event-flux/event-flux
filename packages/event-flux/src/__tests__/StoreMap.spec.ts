@@ -7,8 +7,8 @@ jest.useFakeTimers();
 describe("StoreMap", () => {
   test("init with size 0", () => {
     let dispatchParent = { setState: jest.fn };
-    let storeList = new StoreMap(dispatchParent);
-    storeList._inject(StoreBase, "hello", { dep: new StoreBase(dispatchParent) }, undefined, {});
+    let storeList = new StoreMap();
+    storeList._inject(dispatchParent, StoreBase, "hello", { dep: new StoreBase() }, undefined, {});
     storeList._init();
 
     expect(storeList.storeMap.size).toEqual(0);
@@ -16,11 +16,12 @@ describe("StoreMap", () => {
 
   test("init with key1, key2 and initial states", () => {
     let dispatchParent = { setState: jest.fn };
-    let storeList = new StoreMap(dispatchParent);
+    let storeList = new StoreMap();
     storeList._inject(
+      dispatchParent,
       StoreBase,
       "hello",
-      { dep: new StoreBase(dispatchParent) },
+      { dep: new StoreBase() },
       { key1: { hello: 0 }, key2: { hello: 1 } },
       { keys: ["key1", "key2"] }
     );
@@ -37,8 +38,8 @@ describe("StoreMap", () => {
 
   test("init with key1, key2 and can update to parent", async () => {
     let dispatchParent = { setState: jest.fn };
-    let storeList = new StoreMap(dispatchParent);
-    storeList._inject(StoreBase, "hello", {}, undefined, {
+    let storeList = new StoreMap();
+    storeList._inject(dispatchParent, StoreBase, "hello", {}, undefined, {
       keys: ["key1", "key2"]
     });
 
@@ -57,8 +58,8 @@ describe("StoreMap", () => {
 
   test("init with key1, key2 and dispose normally", async () => {
     let dispatchParent = { setState: jest.fn() };
-    let storeList = new StoreMap(dispatchParent);
-    storeList._inject(StoreBase, "hello", {}, undefined, {
+    let storeList = new StoreMap();
+    storeList._inject(dispatchParent, StoreBase, "hello", {}, undefined, {
       keys: ["key1", "key2"]
     });
 
@@ -89,8 +90,8 @@ describe("StoreMap", () => {
       setState: jest.fn(),
       _recycleStrategy: RecycleStrategy.Urgent
     };
-    let storeMap = new StoreMap(dispatchParent);
-    storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
+    let storeMap = new StoreMap();
+    storeMap._inject(dispatchParent, StoreBase, "hello", {}, undefined, undefined);
 
     let disposable1 = storeMap.request(["key1", "key2"]);
     expect(storeMap._keyRefs["key1"]).toBe(1);
@@ -122,8 +123,8 @@ describe("StoreMap", () => {
       setState: jest.fn(),
       _recycleStrategy: RecycleStrategy.Urgent
     };
-    let storeMap = new StoreMap(dispatchParent);
-    storeMap._inject(StoreBase, "hello", {}, undefined, { recycleStrategy: RecycleStrategy.Urgent });
+    let storeMap = new StoreMap();
+    storeMap._inject(dispatchParent, StoreBase, "hello", {}, undefined, { recycleStrategy: RecycleStrategy.Urgent });
     expect(storeMap._recycleStrategy).toEqual(RecycleStrategy.Urgent);
 
     let observer = jest.fn();
@@ -143,8 +144,8 @@ describe("StoreMap", () => {
 
   test("add and delete store keys", () => {
     let dispatchParent = { setState: jest.fn() };
-    let storeMap = new StoreMap(dispatchParent);
-    storeMap._inject(StoreBase, "hello", {}, undefined, undefined);
+    let storeMap = new StoreMap();
+    storeMap._inject(dispatchParent, StoreBase, "hello", {}, undefined, undefined);
 
     storeMap.add("key1");
     expect(Array.from(storeMap.keys())).toEqual(["key1"]);

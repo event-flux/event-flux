@@ -49,14 +49,13 @@ export function invoker(target: any, propertyKey: string, descriptor: PropertyDe
 export default class StoreBase<StateT> implements DispatchItem {
   state: StateT = {} as StateT;
 
-  _emitter = new Emitter();
-  _disposables = new CompositeDisposable();
+  emitter = new Emitter();
+  disposables = new CompositeDisposable();
 
   _inWillUpdate = false;
   _willUpdateStates: any[] = [];
 
-  _appStore: DispatchParent;
-  _args: any = null;
+  _appStore: DispatchParent | undefined;
   _stateKey: string | undefined;
 
   _refCount = 0;
@@ -71,28 +70,25 @@ export default class StoreBase<StateT> implements DispatchItem {
   static isStore: (store: any) => boolean;
   // static innerStores;
 
-  constructor(appStore: DispatchParent) {
-    this._appStore = appStore;
-  }
-
   /**
    * Inject the store's dependency stores into this store, It will be invoked before init
    * @param depStores: the store's dependencies, the dependency stores will be injected to this store
    */
   _inject(
+    appStore: DispatchParent | undefined,
     StoreBuilder: StoreBaseConstructor<any>,
     stateKey?: string,
     depStores?: { [storeKey: string]: DispatchItem },
     initState?: any,
     options?: StoreDeclarerOptions
   ) {
+    this._appStore = appStore;
     this._stateKey = stateKey;
     if (depStores) {
       for (let storeKey in depStores) {
         this[storeKey] = depStores[storeKey];
       }
     }
-    this._args = options ? options.args : undefined;
 
     // Observe this store's state and send the state to appStore
     if (initState) {
@@ -105,6 +101,7 @@ export default class StoreBase<StateT> implements DispatchItem {
 
   _handleUpdate = (state: any) => {
     let stateKey = this._stateKey;
+    if (!this._appStore) return;
     if (stateKey) {
       this._appStore.setState({ [stateKey]: state });
     } else {
@@ -134,19 +131,9 @@ export default class StoreBase<StateT> implements DispatchItem {
     this.__enableUpdate = true;
     if (this._hasUpdate) {
       this._hasUpdate = false;
-      this._emitter.emit("did-update", this.state);
+      this.emitter.emit("did-update", this.state);
     }
   };
-
-  getArgs() {
-    return this._args;
-  }
-
-  // Create new store from storeClass. storeClass must be factory or class.
-  // buildStore(storeClass, args, options) {
-  //   if (!this._appStore) return console.error('Can not invoke buildStore in constructor');
-  //   return buildStore(this._appStore, storeClass, args, options);
-  // }
 
   setState(state: any) {
     // 当will-update，将状态保存到缓存队列中
@@ -157,7 +144,7 @@ export default class StoreBase<StateT> implements DispatchItem {
     // Make the update delay to next tick that can collect many update into one operation.
     let nextState = Object.assign({}, this.state, state);
     this._inWillUpdate = true;
-    this._emitter.emit("will-update", nextState);
+    this.emitter.emit("will-update", nextState);
     this._inWillUpdate = false;
     if (this._willUpdateStates.length > 0) {
       this.state = this._willUpdateStates.reduce((allState, state) => Object.assign(allState, state), nextState);
@@ -168,7 +155,7 @@ export default class StoreBase<StateT> implements DispatchItem {
 
     // Send update notification.
     if (this.__enableUpdate) {
-      this._emitter.emit("did-update", this.state);
+      this.emitter.emit("did-update", this.state);
     } else {
       this._hasUpdate = true;
     }
@@ -176,27 +163,27 @@ export default class StoreBase<StateT> implements DispatchItem {
 
   @eventListener
   onDidUpdate(callback: (value: StateT) => void): Disposable {
-    return this._emitter.on("did-update", callback);
+    return this.emitter.on("did-update", callback);
   }
 
   @eventListener
   onWillUpdate(callback: (value: StateT) => void) {
-    return this._emitter.on("will-update", callback);
+    return this.emitter.on("will-update", callback);
   }
 
   @eventListener
   observe(callback: (value: StateT) => void) {
     callback(this.state);
-    return this._emitter.on("did-update", callback);
+    return this.emitter.on("did-update", callback);
   }
 
   addDisposable(item: DisposableLike) {
-    this._disposables.add(item);
+    this.disposables.add(item);
   }
 
   dispose() {
-    this._disposables.dispose();
-    this._emitter.dispose();
+    this.disposables.dispose();
+    this.emitter.dispose();
     this._handleUpdate(undefined);
   }
 

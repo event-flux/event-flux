@@ -267,7 +267,7 @@ export default class AppStore implements DispatchParent {
     for (let i = depList.length - 1; i >= 0; i -= 1) {
       let storeKey = depList[i];
       // let storeInfo = this._storeRegisterMap[storeKey];
-      let curStore = this._storeRegisterMap[storeKey].create(this);
+      let curStore = this._storeRegisterMap[storeKey].create();
       curStore._addRef();
       // this.stores[this._getStoreKey(storeKey, storeOpts)] = curStore;
       this._createStore(storeKey, curStore, storeOpts);
@@ -289,6 +289,7 @@ export default class AppStore implements DispatchParent {
           : this.__initStates__
         : undefined;
       this.stores[this._getStoreKey(storeKey, storeOpts)]._inject(
+        this,
         storeInfo.Store,
         this._getStateKey(storeKey, stateKey!, storeOpts),
         depStores,

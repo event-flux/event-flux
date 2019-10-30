@@ -1,11 +1,9 @@
-import { Emitter, Disposable } from "event-kit";
 import StoreBase from "./StoreBase";
-import AppStore from "./AppStore";
 import { StoreBaseConstructor, StoreListDeclarerOptions, StoreListDeclarer } from "./StoreDeclarer";
 import DispatchItem from "./DispatchItem";
 import DispatchParent from "./DispatchParent";
 
-export default class StoreList<T> {
+export default class StoreList<T> implements DispatchItem {
   length: number = 0;
   storeArray: StoreBase<T>[] = [];
 
@@ -14,15 +12,11 @@ export default class StoreList<T> {
   _depStores: { [storeKey: string]: DispatchItem } = {};
   _stateKey: string | undefined;
 
-  _appStore: DispatchParent;
+  _appStore: DispatchParent | undefined;
   _refCount = 0;
 
   __initStates__: any;
   state: any = {};
-
-  constructor(appStore: DispatchParent) {
-    this._appStore = appStore;
-  }
 
   _init() {
     if (this._options!.size) {
@@ -34,12 +28,14 @@ export default class StoreList<T> {
   init() {}
 
   _inject(
+    appStore: DispatchParent | undefined,
     StoreBuilder: StoreBaseConstructor<T>,
     stateKey?: string,
     depStores?: { [storeKey: string]: DispatchItem },
     initState?: any,
     options?: StoreListDeclarerOptions
   ) {
+    this._appStore = appStore;
     this._stateKey = stateKey;
     if (!stateKey) console.error("StoreList can not let stateKey to null");
 
@@ -64,11 +60,11 @@ export default class StoreList<T> {
     if (this.length < count) {
       let initList = [];
       for (let i = this.length; i < count; ++i) {
-        let newStore = new this._StoreBuilder!(this);
+        let newStore = new this._StoreBuilder!();
         newStore.listIndex = i;
 
         let initState = this.__initStates__ ? this.__initStates__[i] : undefined;
-        newStore._inject(this._StoreBuilder!, i.toString(), this._depStores, initState, {});
+        newStore._inject(this, this._StoreBuilder!, i.toString(), this._depStores, initState, {});
         this.storeArray.push(newStore);
         // newStore._init();
         initList.push(newStore);
@@ -87,7 +83,7 @@ export default class StoreList<T> {
 
   setState(state: any) {
     this.state = { ...this.state, ...state };
-    if (this._stateKey) {
+    if (this._stateKey && this._appStore) {
       this._appStore.setState({ [this._stateKey]: this.state });
     }
   }
@@ -95,7 +91,7 @@ export default class StoreList<T> {
   dispose() {
     this.setSize(0);
     this.state = {};
-    if (this._stateKey) {
+    if (this._stateKey && this._appStore) {
       this._appStore.setState({ [this._stateKey]: undefined });
     }
   }

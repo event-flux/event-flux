@@ -34,7 +34,7 @@ export class OperateModeSwitch {
   }
 }
 
-export default class StoreMap<T> {
+export default class StoreMap<T> implements DispatchItem {
   storeMap: Map<string, any> = new Map();
 
   _options: StoreMapDeclarerOptions | undefined;
@@ -45,20 +45,18 @@ export default class StoreMap<T> {
   _recycleStrategy: RecycleStrategy | undefined;
   _keyCache: LRU<string> | undefined;
 
-  _appStore: DispatchParent;
+  _appStore: DispatchParent | undefined;
   _refCount = 0;
-  _emitter = new Emitter();
+
+  emitter = new Emitter();
 
   __initStates__: any;
   state: any = {};
 
   _keyRefs: { [key: string]: number } = {};
-  _disposables = new CompositeDisposable();
-  operateModeSwitch = new OperateModeSwitch();
 
-  constructor(appStore: DispatchParent) {
-    this._appStore = appStore;
-  }
+  disposables = new CompositeDisposable();
+  operateModeSwitch = new OperateModeSwitch();
 
   _init() {
     let keys = this._options!.keys;
@@ -71,12 +69,14 @@ export default class StoreMap<T> {
   init() {}
 
   _inject(
+    appStore: DispatchParent | undefined,
     StoreBuilder: StoreBaseConstructor<T>,
     stateKey?: string,
     depStores?: { [storeKey: string]: DispatchItem },
     initState?: any,
     options?: StoreMapDeclarerOptions
   ) {
+    this._appStore = appStore;
     this._stateKey = stateKey;
     if (!stateKey) console.error("StoreList can not let stateKey to null");
 
@@ -106,7 +106,7 @@ export default class StoreMap<T> {
   }
 
   onDidChangeRS(callback: (recycleStrategy: RecycleStrategy) => void) {
-    return this._emitter.on("did-change-rs", callback);
+    return this.emitter.on("did-change-rs", callback);
   }
 
   observeRS(callback: (recycleStrategy: RecycleStrategy) => void) {
@@ -127,7 +127,7 @@ export default class StoreMap<T> {
           this._deleteOne(removeKey);
         });
       }
-      this._emitter.emit("did-change-rs", recycleStrategy);
+      this.emitter.emit("did-change-rs", recycleStrategy);
     }
   }
 
@@ -181,17 +181,17 @@ export default class StoreMap<T> {
         }
       }
     };
-    this._disposables.add(disposable);
+    this.disposables.add(disposable);
     return disposable;
   }
 
   _addOne(key: string) {
     if (this.storeMap.has(key)) return;
-    let newStore = new this._StoreBuilder!(this);
+    let newStore = new this._StoreBuilder!();
     newStore.mapKey = key;
 
     let initState = this.__initStates__ ? this.__initStates__[key] : undefined;
-    newStore._inject(this._StoreBuilder!, key, this._depStores, initState, {});
+    newStore._inject(this, this._StoreBuilder!, key, this._depStores, initState, {});
     this.storeMap.set(key, newStore);
     return newStore._init();
   }
@@ -234,17 +234,17 @@ export default class StoreMap<T> {
 
   setState(state: any) {
     this.state = { ...this.state, ...state };
-    if (this._stateKey) {
+    if (this._stateKey && this._appStore) {
       this._appStore.setState({ [this._stateKey]: this.state });
     }
   }
 
   dispose() {
     this.clear();
-    this._disposables.dispose();
+    this.disposables.dispose();
     this.state = {};
-    this._emitter.dispose();
-    if (this._stateKey) {
+    this.emitter.dispose();
+    if (this._stateKey && this._appStore) {
       this._appStore.setState({ [this._stateKey]: undefined });
     }
   }

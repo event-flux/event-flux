@@ -3,8 +3,8 @@ import { declareStore } from "../StoreDeclarer";
 import DispatchParent from "../DispatchParent";
 
 class TodoStore extends StoreBase<{ todo2: string }> {
-  constructor(appStore: DispatchParent) {
-    super(appStore);
+  constructor() {
+    super();
     this.state = { todo2: "todo2" };
   }
 }

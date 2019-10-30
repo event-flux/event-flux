@@ -6,8 +6,8 @@ jest.useFakeTimers();
 describe("StoreList", () => {
   test("init with size 0", () => {
     let dispatchParent = { setState: jest.fn };
-    let storeList = new StoreList(dispatchParent);
-    storeList._inject(StoreBase, "hello", { dep: new StoreBase(dispatchParent) }, undefined, { size: 0 });
+    let storeList = new StoreList();
+    storeList._inject(dispatchParent, StoreBase, "hello", { dep: new StoreBase() }, undefined, { size: 0 });
     storeList._init();
 
     expect(storeList.length).toBe(0);
@@ -16,11 +16,14 @@ describe("StoreList", () => {
 
   test("init with size 2 and initial states", () => {
     let dispatchParent = { setState: jest.fn };
-    let storeList = new StoreList(dispatchParent);
+    let storeList = new StoreList();
+    let depStore = new StoreBase();
+    depStore._inject(dispatchParent, StoreBase);
     storeList._inject(
+      dispatchParent,
       StoreBase,
       "hello",
-      { dep: new StoreBase(dispatchParent) },
+      { dep: depStore },
       { 0: { hello: 0 }, 1: { hello: 1 } },
       { size: 2 }
     );
@@ -37,8 +40,8 @@ describe("StoreList", () => {
 
   test("init with size 2 and can update to parent", async () => {
     let dispatchParent = { setState: jest.fn };
-    let storeList = new StoreList(dispatchParent);
-    storeList._inject(StoreBase, "hello", {}, undefined, { size: 2 });
+    let storeList = new StoreList();
+    storeList._inject(dispatchParent, StoreBase, "hello", {}, undefined, { size: 2 });
 
     await storeList._init();
     expect(storeList.length).toBe(2);
@@ -53,8 +56,8 @@ describe("StoreList", () => {
 
   test("init with size 2 and dispose normally", async () => {
     let dispatchParent = { setState: jest.fn() };
-    let storeList = new StoreList(dispatchParent);
-    storeList._inject(StoreBase, "hello", {}, undefined, { size: 2 });
+    let storeList = new StoreList();
+    storeList._inject(dispatchParent, StoreBase, "hello", {}, undefined, { size: 2 });
 
     await storeList._init();
     expect(storeList.length).toBe(2);

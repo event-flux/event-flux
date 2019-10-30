@@ -1,4 +1,5 @@
 import { StoreBaseConstructor } from "./StoreDeclarer";
+import { DispatchParent } from "../lib";
 
 export default interface DispatchItem {
   // Init this dispatch item
@@ -6,6 +7,7 @@ export default interface DispatchItem {
 
   // AppStore will inject some state into this dispatch item
   _inject(
+    appStore: DispatchParent | undefined,
     StoreBuilder: StoreBaseConstructor<any>,
     stateKey?: string,
     depStores?: { [storeKey: string]: DispatchItem },
