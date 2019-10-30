@@ -1,5 +1,5 @@
 import { StoreBaseConstructor } from "./StoreDeclarer";
-import { DispatchParent } from "../lib";
+import DispatchParent from "./DispatchParent";
 
 export default interface DispatchItem {
   // Init this dispatch item

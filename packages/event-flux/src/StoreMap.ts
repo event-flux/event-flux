@@ -2,7 +2,8 @@ import { StoreMapDeclarerOptions, StoreBaseConstructor, StoreMapDeclarer } from 
 import DispatchItem from "./DispatchItem";
 import DispatchParent from "./DispatchParent";
 import { DisposableLike, CompositeDisposable, Emitter } from "event-kit";
-import { RecycleStrategy, AppStore } from ".";
+import RecycleStrategy from "./RecycleStrategy";
+import AppStore from "./AppStore";
 import LRU from "./LRU";
 
 export enum OperateMode {
