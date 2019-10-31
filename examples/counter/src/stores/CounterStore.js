@@ -2,6 +2,7 @@ import { StoreBase } from "event-flux";
 
 export default class CounterStore extends StoreBase {
   constructor() {
+    super();
     this.state = { counter: 0 };
   }
 
