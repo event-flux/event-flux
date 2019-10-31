@@ -1,7 +1,7 @@
 # Table of contents
 
 - [event-flux](../README.md)
-- [Get Started](./start.md)
+- [Get Started](./get-started.md)
 
 ## introduce
 

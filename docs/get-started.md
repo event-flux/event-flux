@@ -69,4 +69,6 @@ This architecture might seem like an overkill for a counter app, but the beauty 
 
 The `event-flux` repository contains several example projects demonstrating various aspects of how to use `event-flux`. Almost all examples have a corresponding CodeSandbox sandbox. This is an interactive version of the code that you can play with online.
 
-- Counter: [Sandbox](https://codesandbox.io/s/counter-83cte)
+- **Counter**: [Source](https://github.com/event-flux/event-flux/tree/master/examples/counter) | [Sandbox](https://codesandbox.io/s/github/event-flux/event-flux/tree/master/examples/counter)
+- **Multi Todos**: [Source](https://github.com/event-flux/event-flux/tree/master/examples/multitodos) | [Sandbox](https://codesandbox.io/s/github/event-flux/event-flux/tree/master/examples/multitodos)
+- **Todo MVC**: [Source](https://github.com/event-flux/event-flux/tree/master/examples/todomvc) | [Sandbox](https://codesandbox.io/s/github/event-flux/event-flux/tree/master/examples/todomvc)
