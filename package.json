@@ -6,7 +6,7 @@
   "scripts": {
     "prettier": "prettier --write packages/*/src/**/*.*",
     "test": "jest --detectLeaks --coverage && codecov",
-    "release": "gulp && cd ./lib/event-flux && npm publish && cd ../react-event-flux && npm publish"
+    "release": "cd ./packages/event-flux && npm publish && cd ../react-event-flux && npm publish"
   },
   "repository": {
     "type": "git",
