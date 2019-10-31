@@ -5,10 +5,7 @@ import TodoTextInput from "./TodoTextInput";
 
 export default class TodoItem extends Component {
   static propTypes = {
-    todo: PropTypes.object.isRequired,
-    editTodo: PropTypes.func.isRequired,
-    deleteTodo: PropTypes.func.isRequired,
-    completeTodo: PropTypes.func.isRequired
+    todo: PropTypes.object.isRequired
   };
 
   state = {
@@ -19,14 +16,26 @@ export default class TodoItem extends Component {
     this.setState({ editing: true });
   };
 
-  handleSave = (id, text) => {
+  handleSave = (todo, text) => {
     if (text.length === 0) {
-      this.props.deleteTodo(id);
+      this.props.todoStore.destroy(todo);
     } else {
-      this.props.editTodo(id, text);
+      this.props.todoStore.save(todo, text);
     }
     this.setState({ editing: false });
   };
+
+  handleEditTodo(id, text) {
+    this.props.todoStore.save(id, text);
+  }
+
+  handleDeleteTodo(todo) {
+    this.props.todoStore.destroy(todo);
+  }
+
+  handleCompleteTodo(todo) {
+    this.props.todoStore.toggle(todo);
+  }
 
   render() {
     const { todo, completeTodo, deleteTodo } = this.props;
@@ -34,14 +43,26 @@ export default class TodoItem extends Component {
     let element;
     if (this.state.editing) {
       element = (
-        <TodoTextInput text={todo.text} editing={this.state.editing} onSave={text => this.handleSave(todo.id, text)} />
+        <TodoTextInput
+          text={todo.title}
+          editing={this.state.editing}
+          onSave={text => this.handleSave(todo, text)}
+        />
       );
     } else {
       element = (
         <div className="view">
-          <input className="toggle" type="checkbox" checked={todo.completed} onChange={() => completeTodo(todo.id)} />
-          <label onDoubleClick={this.handleDoubleClick}>{todo.text}</label>
-          <button className="destroy" onClick={() => deleteTodo(todo.id)} />
+          <input
+            className="toggle"
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => this.handleCompleteTodo(todo)}
+          />
+          <label onDoubleClick={this.handleDoubleClick}>{todo.title}</label>
+          <button
+            className="destroy"
+            onClick={() => this.handleDeleteTodo(todo)}
+          />
         </div>
       );
     }

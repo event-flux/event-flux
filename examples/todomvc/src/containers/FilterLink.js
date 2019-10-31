@@ -1,18 +1,8 @@
-import { connect } from "react-redux";
-import { setVisibilityFilter } from "../actions";
 import Link from "../components/Link";
+import { withEventFlux } from "react-event-flux";
 
-const mapStateToProps = (state, ownProps) => ({
-  active: ownProps.filter === state.visibilityFilter
-});
+const eventFluxArgs = {
+  todoStore: state => ({ activeFilter: state.filter })
+};
 
-const mapDispatchToProps = (dispatch, ownProps) => ({
-  setFilter: () => {
-    dispatch(setVisibilityFilter(ownProps.filter));
-  }
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Link);
+export default withEventFlux(eventFluxArgs)(Link);

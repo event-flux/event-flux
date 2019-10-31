@@ -1,15 +1,16 @@
 import React from "react";
 import { render } from "react-dom";
-import { createStore } from "redux";
-import { Provider } from "react-redux";
 import App from "./components/App";
-import reducer from "./reducers";
 import "todomvc-app-css/index.css";
 
-const store = createStore(reducer);
+import { AppStore, declareStore } from "event-flux";
+import { Provider } from "react-event-flux";
+import TodoStore from "./stores/TodoStore";
+
+let appStore = new AppStore([declareStore(TodoStore)]).init();
 
 render(
-  <Provider store={store}>
+  <Provider appStore={appStore}>
     <App />
   </Provider>,
   document.getElementById("root")

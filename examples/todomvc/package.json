@@ -8,12 +8,11 @@
   },
   "dependencies": {
     "classnames": "^2.2.6",
+    "event-flux": "1.3.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-redux": "^7.0.2",
-    "redux": "^4.0.1",
-    "reselect": "^4.0.0",
+    "react-event-flux": "1.3.0",
     "todomvc-app-css": "^2.2.0"
   },
   "scripts": {

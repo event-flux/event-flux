@@ -1,8 +1,4 @@
-import { connect } from "react-redux";
 import Header from "../components/Header";
-import { addTodo } from "../actions";
+import { withEventFlux } from "react-event-flux";
 
-export default connect(
-  null,
-  { addTodo }
-)(Header);
+export default withEventFlux("todoStore")(Header);
