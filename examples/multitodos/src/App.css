@@ -1,0 +1,65 @@
+.todo-group-list {
+  position: absolute;
+  top: 130px;
+  left: 30px;
+  width: 200px;
+  height: 400px;
+  background: #eee;
+  text-align: left;
+  font-size: 14px;
+  line-height: 28px;
+}
+
+.todo-group-list .title {
+  font-size: 16px;
+  background-color: bisque;
+  line-height: 40px;
+  padding: 0 10px;
+}
+
+.todo-group-list .content > div {
+  background: #bbb;
+  padding: 0 10px;
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+.todo-group-list .content > .active {
+  background-color: greenyellow;
+}
+
+.todo-group-list .add-btn {
+  color: #1976d2;
+  border: 1px solid rgba(25, 118, 210, 0.5);
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.dialog {
+  box-shadow: 0 7px 17px 8px rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background-color: #eee;
+  padding: 0 10px;
+}
+
+.dialog .title {
+  font-size: 16px;
+  line-height: 36px;
+}
+
+.dialog .inputbox {
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.dialog .inputbox input {
+  height: 28px;
+  font-size: 14px;
+}
+
+.dialog .button {
+  width: 160px;
+  height: 28px;
+  background-color: greenyellow;
+  cursor: pointer;
+}
