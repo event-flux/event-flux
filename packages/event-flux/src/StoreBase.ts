@@ -109,7 +109,7 @@ export default class StoreBase<StateT> implements DispatchItem {
     }
   };
 
-  _init(): void | Promise<void> {
+  _init(): any | Promise<any> {
     // Before init, we will disable update
     this._disableUpdate();
     let retVal = this.init();
@@ -121,7 +121,7 @@ export default class StoreBase<StateT> implements DispatchItem {
     }
   }
 
-  init(): void | Promise<void> {}
+  init(): any | Promise<any> {}
 
   _disableUpdate() {
     this.__enableUpdate = false;

@@ -3,7 +3,7 @@ import DispatchParent from "./DispatchParent";
 
 export default interface DispatchItem {
   // Init this dispatch item
-  _init(): void;
+  _init(): any | Promise<any>;
 
   // AppStore will inject some state into this dispatch item
   _inject(

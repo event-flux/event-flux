@@ -18,14 +18,14 @@ export default class StoreList<T> implements DispatchItem {
   __initStates__: any;
   state: any = {};
 
-  _init() {
+  _init(): any | Promise<any> {
     if (this._options!.size) {
       return Promise.all([this.setSize(this._options!.size), this.init()]);
     }
     return this.init();
   }
 
-  init() {}
+  init(): any | Promise<any> {}
 
   _inject(
     appStore: DispatchParent | undefined,
@@ -55,7 +55,7 @@ export default class StoreList<T> implements DispatchItem {
     this.__initStates__ = initStates;
   }
 
-  setSize(count: number): Promise<void[]> | undefined {
+  setSize(count: number): Promise<any[]> | undefined {
     if (this.length === count) return;
     if (this.length < count) {
       let initList = [];

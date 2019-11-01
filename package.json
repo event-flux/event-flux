@@ -50,7 +50,8 @@
     "react-dom": "^16.9.0",
     "react-test-renderer": "^16.9.0",
     "ts-jest": "^24.1.0",
-    "typescript": "^3.6.3",
+    "typedoc": "^0.15.0",
+    "typescript": "^3.6.4",
     "weak": "^1.0.1"
   },
   "dependencies": {

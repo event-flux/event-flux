@@ -59,7 +59,7 @@ export default class StoreMap<T> implements DispatchItem {
   disposables = new CompositeDisposable();
   operateModeSwitch = new OperateModeSwitch();
 
-  _init() {
+  _init(): any | Promise<any> {
     let keys = this._options!.keys;
     if (keys && Array.isArray(keys)) {
       return Promise.all([...keys.map(key => this.add(key)), this.init()]);
@@ -67,7 +67,7 @@ export default class StoreMap<T> implements DispatchItem {
     return this.init();
   }
 
-  init() {}
+  init(): any | Promise<any> {}
 
   _inject(
     appStore: DispatchParent | undefined,
