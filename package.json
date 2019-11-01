@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "scripts": {
     "prettier": "prettier --write packages/*/src/**/*.*",
-    "test": "jest --detectLeaks --coverage && codecov",
+    "test": "jest --coverage && codecov",
     "release": "cd ./packages/event-flux && npm publish && cd ../react-event-flux && npm publish"
   },
   "repository": {

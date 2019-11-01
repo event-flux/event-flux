@@ -1,6 +1,5 @@
 import { uuid, pluralize, store, extend } from "./util";
 import { StoreBase, declareStoreMap } from "event-flux";
-import { declareStore } from "event-flux";
 
 export class TodoStore extends StoreBase {
   init() {
