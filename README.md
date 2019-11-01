@@ -23,7 +23,7 @@
 
 There are many stores in a large scale `event-flux` application, so the AppStore will contain the store tree. AppStore also collect the store's states to the state tree, so the view can get the full state tree to render like `Redux`.
 
-`event-flux` use the event-emitter style to notify other stores and components that the store state has changed.
+**event-flux** use the event-emitter style to notify other stores and components that the store state has changed.
 
 #### Install the package
 
@@ -126,4 +126,4 @@ ReactDOM.render(
 
 This app create AppStore instance with TodoStore declarer. The `declareStore` will declare the Store and set some options such as `storeKey`. The store declarer will not create the store instance, it only declare the Store class. In this code snippet, we declare `TodoStore` Store class. The Store will be instantiated when UI needed by `withEventFlux`.
 
-More examples can refer to `https://github.com/event-flux/event-flux/tree/master/examples`.
+More examples can refer to [event-flux examples](https://github.com/event-flux/event-flux/tree/master/examples).

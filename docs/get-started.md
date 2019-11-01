@@ -1,24 +1,24 @@
-# Getting Started with Redux
+# Getting Started with event-flux
 
-`event-flux` is a predictable state container for JavaScript apps.
+**event-flux** is a modular predictable state container for JavaScript apps.
 
 It helps you write applications that behave consistently, run in different environments (client, server, and native), and are easy to test. On top of that, it provides lazy load and depdendency inject that can improve
 the app performance.
 
-You can use Redux together with React, or with any other view library.
+You can use `event-flux` together with React, or with any other view library.
 
 ## Installation
 
-`event-flux` is available as a package on NPM for use with a module bundler or in a Node application:
+**event-flux** is available as a package on NPM for use with a module bundler or in a Node application:
 
 ```sh
-npm install --save redux
+npm install --save event-flux
 ```
 
 ## Basic Example
 
-The whole state of your app is stored in an object tree inside many stores and a app store that is the container of stores.
-The only way to change the state tree is to emit an action, an object describing what happened.
+The AppStore is the container of stores and every store contain the owned states. The AppStore will gather all of the store's states to build a state tree, so the whole state of your app is stored in an object tree from many stores.
+The only way to change the state tree is to emit an action of the store.
 To specify how the actions transform the state tree, you write action function in store.
 
 ```js
@@ -59,11 +59,11 @@ counterStore.decrement();
 appStore.releaseStore("counterStore");
 ```
 
-Instead of mutating the state directly, you specify the mutation functions you want to happen with method called actions. Then you write a special function to decide how every action transforms this module's state.
+Instead of mutating the state directly, you specify the mutation functions you want to happen with methods called actions. Then you write a special function to decide how to transforms this store's state.
 
 In a typical `event-flux` app, there is just a single app store with many module stores that manage some module state. Each store manage own state by mutation functions. As your app grows, you split the store into smaller stores independently operating on the different parts of the state tree. This is exactly like how there is just one root component in a React app, but it is composed out of many small components.
 
-This architecture might seem like an overkill for a counter app, but the beauty of this pattern is how well it scales to large and complex apps. It also enables very powerful developer tools, because it is possible to trace every mutation to the action that caused it. You can record user sessions and reproduce them just by replaying every action.
+This architecture might seem like an overkill for a counter app, but the beauty of this pattern is how well it scales to large and complex apps.
 
 ## Examples
 
